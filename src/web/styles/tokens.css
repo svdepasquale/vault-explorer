@@ -1,0 +1,99 @@
+/*
+ * Design tokens. Values come from the data-viz reference palette (validated
+ * with its contrast/CVD checker): surfaces, ink, chart chrome, the categorical
+ * slots used for page kinds, the blue sequential ramp and the status scale.
+ * Dark values are selected steps, not an automatic inversion.
+ *
+ * Page kinds on the graph are an all-pairs form (any two nodes can touch), so
+ * at most four hues are allowed: blue / yellow / magenta / green pass the
+ * all-pairs normal-vision floor in both modes; every other kind is gray, and
+ * labels + legend carry identity as the required secondary encoding.
+ * The same hexes live in src/web/app/palette.ts for canvas/WebGL use.
+ */
+:root {
+  color-scheme: light;
+  --plane: #f9f9f7;
+  --surface: #fcfcfb;
+  --wash: rgba(11, 11, 11, 0.045);
+  --wash-strong: rgba(11, 11, 11, 0.08);
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-3: #898781;
+  --grid: #e1e0d9;
+  --baseline: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.1);
+  --border-strong: rgba(11, 11, 11, 0.18);
+
+  --kind-entity: #2a78d6;
+  --kind-source: #eda100;
+  --kind-runbook: #e87ba4;
+  --kind-profile: #008300;
+  --kind-other: #898781;
+
+  --seq-100: #cde2fb;
+  --seq-300: #6da7ec;
+  --seq-450: #2a78d6;
+  --seq-600: #184f95;
+  --seq-700: #0d366b;
+
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+  --success-text: #006300;
+
+  --focus: #2a78d6;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 10px 28px rgba(0, 0, 0, 0.08);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme='light'])) {
+    color-scheme: dark;
+    --plane: #0d0d0d;
+    --surface: #1a1a19;
+    --wash: rgba(255, 255, 255, 0.05);
+    --wash-strong: rgba(255, 255, 255, 0.09);
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --ink-3: #898781;
+    --grid: #2c2c2a;
+    --baseline: #383835;
+    --border: rgba(255, 255, 255, 0.1);
+    --border-strong: rgba(255, 255, 255, 0.18);
+    --kind-entity: #3987e5;
+    --kind-source: #c98500;
+    --kind-runbook: #d55181;
+    --kind-profile: #008300;
+    --kind-other: #898781;
+    --success-text: #0ca30c;
+    --focus: #3987e5;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.45);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --plane: #0d0d0d;
+  --surface: #1a1a19;
+  --wash: rgba(255, 255, 255, 0.05);
+  --wash-strong: rgba(255, 255, 255, 0.09);
+  --ink: #ffffff;
+  --ink-2: #c3c2b7;
+  --ink-3: #898781;
+  --grid: #2c2c2a;
+  --baseline: #383835;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --kind-entity: #3987e5;
+  --kind-source: #c98500;
+  --kind-runbook: #d55181;
+  --kind-profile: #008300;
+  --kind-other: #898781;
+  --success-text: #0ca30c;
+  --focus: #3987e5;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.45);
+}

@@ -1,0 +1,47 @@
+{
+  "name": "vault-explorer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local graphical explorer for a markdown knowledge vault: link graph, timeline, composition, health checks and a recall lens.",
+  "license": "MIT",
+  "author": "Silvio Valerio De Pasquale",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "bin": {
+    "vault-explorer": "bin/vault-explorer.js"
+  },
+  "scripts": {
+    "start": "node src/server/main.ts",
+    "dev": "node src/server/main.ts --dev",
+    "build": "vite build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.server.json && tsc -p tsconfig.web.json",
+    "check": "npm run typecheck && npm test && npm run build"
+  },
+  "dependencies": {
+    "@observablehq/plot": "0.6.17",
+    "d3": "7.9.0",
+    "graphology": "0.26.0",
+    "graphology-layout-forceatlas2": "0.10.1",
+    "markdown-it": "15.0.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "sigma": "3.0.3",
+    "yaml": "2.9.1",
+    "zustand": "5.0.15"
+  },
+  "devDependencies": {
+    "@types/d3": "7.4.3",
+    "@types/markdown-it": "14.2.0",
+    "@types/node": "26.6.4",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "graphology-types": "0.24.8",
+    "typescript": "7.0.2",
+    "vite": "8.3.2",
+    "vitest": "5.0.3"
+  }
+}

@@ -1,0 +1,15 @@
+node_modules/
+dist/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+*.swp
