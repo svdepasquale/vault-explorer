@@ -116,6 +116,13 @@ export async function readHistory(dir: string): Promise<RawCommit[] | null> {
   }
 }
 
+/** Path from a `+++ b/<path>` header: git appends a tab after names with spaces and C-quotes odd ones. */
+export function diffPath(raw: string): string {
+  const path = raw.replace(/\t.*$/, '');
+  if (!path.startsWith('"') || !path.endsWith('"')) return path;
+  return path.slice(1, -1).replace(/\\(["\\])/g, '$1').replace(/\\t/g, '\t').replace(/\\n/g, '\n');
+}
+
 /**
  * When each wikilink target was first written on each page: one
  * `git log -p --unified=0` pass over wiki/, reading added lines only.
@@ -157,7 +164,7 @@ export async function readLinkHistory(
     let page: string | null = null;
     for (const line of record.slice(newline + 1).split('\n')) {
       if (line.startsWith('+++ ')) {
-        const path = line.slice(4).replace(/^b\//, '');
+        const path = diffPath(line.slice(4)).replace(/^b\//, '');
         page = /\.md$/i.test(path) && path !== '/dev/null' ? path.replace(/\.md$/i, '') : null;
         continue;
       }

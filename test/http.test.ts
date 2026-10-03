@@ -182,7 +182,7 @@ describe('POST guards', () => {
   // match, so `text/plain; charset=application/json` — a CORS-safelisted
   // content type, sent without preflight — passes it. In browsers the Origin
   // check above still refuses the request; this layer alone does not.
-  it.fails('refuses text/plain even when a parameter names application/json (415)', async () => {
+  it('refuses text/plain even when a parameter names application/json (415)', async () => {
     const reply = await post('/api/vault', { 'content-type': 'text/plain; charset=application/json' }, '{"path":"/x"}');
     expect(reply.status).toBe(415);
   });

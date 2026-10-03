@@ -211,7 +211,7 @@ export async function buildVaultModel(root: string, options: BuildOptions = {}):
       ])
     : [null, null];
   const { commits, ghosts } = foldHistory(history ?? [], new Set(ids), pages);
-  if (linkHistory) datePairs(linkHistory, resolve, linkMap, relationMap);
+  if (linkHistory) datePairs(followRenames(linkHistory, commits), resolve, linkMap, relationMap);
 
   // ── hot cache ────────────────────────────────────────────────────────────
   let hot: HotSummary | null = null;
@@ -272,6 +272,33 @@ export async function buildVaultModel(root: string, options: BuildOptions = {}):
     hot,
     health,
   };
+}
+
+/** Re-key first-seen dates recorded under old paths to the page's current id (renames in `commits`). */
+export function followRenames(linkHistory: Map<string, Map<string, string>>, commits: Commit[]): Map<string, Map<string, string>> {
+  const latest = new Map<string, string>();
+  for (const commit of commits) {
+    for (const ch of commit.changes) {
+      if (ch.status !== 'R' || !ch.from) continue;
+      for (const [old, current] of latest) if (current === ch.from) latest.set(old, ch.id);
+      latest.set(ch.from, ch.id);
+    }
+  }
+  if (!latest.size) return linkHistory;
+  const merged = new Map<string, Map<string, string>>();
+  for (const [page, seen] of linkHistory) {
+    const id = latest.get(page) ?? page;
+    let target = merged.get(id);
+    if (!target) {
+      target = new Map();
+      merged.set(id, target);
+    }
+    for (const [raw, date] of seen) {
+      const known = target.get(raw);
+      if (!known || date < known) target.set(raw, date);
+    }
+  }
+  return merged;
 }
 
 /**

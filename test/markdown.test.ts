@@ -89,7 +89,7 @@ describe('stripCode', () => {
   // the page in the SPA) reads "```x```" on one line as an inline code span —
   // a backtick fence's info string cannot contain backticks — so the links on
   // the following lines are real, but stripCode blanks them until the next ```.
-  it.fails('treats a one-line ```code``` span as inline code, not as a fence', () => {
+  it('treats a one-line ```code``` span as inline code, not as a fence', () => {
     expect(targets('```[[a]]```\n[[b]]')).toEqual(['b']);
   });
 });
@@ -128,7 +128,7 @@ describe('readSections', () => {
   // BUG (src/core/markdown.ts:80): items are matched on the code-stripped line,
   // so an item whose whole text is inline code ("- `npm test`") is blanked to
   // "-  " and dropped from the section (and from the hot.md summary).
-  it.fails('keeps an item whose whole text is inline code', () => {
+  it('keeps an item whose whole text is inline code', () => {
     expect(readSections('## Commands\n- `npm test`')).toEqual([{ title: 'Commands', items: [{ text: '`npm test`' }] }]);
   });
 });

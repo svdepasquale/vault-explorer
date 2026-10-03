@@ -13,11 +13,8 @@ export function extractWikilinks(text: string): WikilinkRef[] {
   return out;
 }
 
-/**
- * Blank out fenced code blocks and inline code spans, so wikilinks quoted inside
- * code (examples, templates) do not count as links. Line structure is preserved.
- */
-export function stripCode(markdown: string): string {
+/** Blank fenced code blocks (``` and ~~~), keeping line structure. */
+export function blankFences(markdown: string): string {
   const lines = markdown.split('\n');
   let fence: { char: string; length: number } | null = null;
   for (let i = 0; i < lines.length; i++) {
@@ -28,15 +25,26 @@ export function stripCode(markdown: string): string {
       lines[i] = '';
       continue;
     }
-    const open = /^\s{0,3}(`{3,}|~{3,})/.exec(line);
-    if (open?.[1]) {
+    // CommonMark: the info string of a backtick fence cannot contain backticks,
+    // so a one-line ```code``` is an inline span, not a fence.
+    const open = /^\s{0,3}(`{3,}|~{3,})(.*)$/.exec(line);
+    if (open?.[1] && !(open[1][0] === '`' && (open[2] ?? '').includes('`'))) {
       fence = { char: open[1][0] ?? '`', length: open[1].length };
       lines[i] = '';
-      continue;
     }
-    lines[i] = line.replace(/(`+)(?!`)([\s\S]*?[^`])\1(?!`)/g, ' ');
   }
   return lines.join('\n');
+}
+
+/**
+ * Blank out fenced code blocks and inline code spans, so wikilinks quoted inside
+ * code (examples, templates) do not count as links. Line structure is preserved.
+ */
+export function stripCode(markdown: string): string {
+  return blankFences(markdown)
+    .split('\n')
+    .map((line) => line.replace(/(`+)(?!`)([\s\S]*?[^`])\1(?!`)/g, ' '))
+    .join('\n');
 }
 
 export function countWords(markdown: string): number {
@@ -58,11 +66,11 @@ export interface Section {
 
 /**
  * `## ` sections with their top-level list items (first line of each item).
- * Structure is read on the code-stripped text, item text from the original line.
+ * Structure is read with fenced blocks blanked, item text from the original line.
  */
 export function readSections(markdown: string): Section[] {
   const original = markdown.split('\n');
-  const stripped = stripCode(markdown).split('\n');
+  const stripped = blankFences(markdown).split('\n');
   const sections: Section[] = [];
   let current: Section | null = null;
   for (let i = 0; i < stripped.length; i++) {

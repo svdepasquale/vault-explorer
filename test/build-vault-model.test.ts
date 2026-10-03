@@ -315,11 +315,11 @@ describe('buildVaultModel — fixture vault with git history', () => {
   // datePairs looks them up by today's page id. Links written on beta while it
   // was still beta-draft are never re-added after the (pure) rename, so they
   // get since = null instead of C1, although foldHistory follows the rename.
-  it.fails('dates a link written before its page was renamed (Link.since)', () => {
+  it('dates a link written before its page was renamed (Link.since)', () => {
     expect(link('entities/beta', 'sources/gamma')?.since).toBe(C1);
   });
 
-  it.fails('dates a relation declared before its page was renamed (Relation.since)', () => {
+  it('dates a relation declared before its page was renamed (Relation.since)', () => {
     expect(relation('entities/beta', 'depends_on', 'sources/gamma')?.since).toBe(C1);
   });
 
@@ -415,7 +415,7 @@ describe('buildVaultModel — link dates for page paths with spaces', () => {
   // header when the path contains a space (measured with git 2.55:
   // "+++ b/entities/with space.md\t"), so `/\.md$/i` fails, `page` stays null
   // and no link or relation on such a page is ever dated.
-  it.fails('dates a link on a page whose path has a space', () => {
+  it('dates a link on a page whose path has a space', () => {
     expect(link('entities/with space', 'entities/alpha')?.since).toBe(C1);
   });
 });

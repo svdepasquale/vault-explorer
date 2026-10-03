@@ -108,7 +108,8 @@ export function createHandler(options: HandlerOptions): (req: IncomingMessage, r
       // browsers that send it anyway.
       const origin = req.headers.origin;
       if (origin && !allowedOrigins().has(origin)) return fail(res, 403, 'Cross-origin request refused', 'forbidden-origin');
-      if (!(req.headers['content-type'] ?? '').includes('application/json')) {
+      const mediaType = (req.headers['content-type'] ?? '').split(';')[0]?.trim().toLowerCase();
+      if (mediaType !== 'application/json') {
         return fail(res, 415, 'Expected application/json', 'unsupported-media-type');
       }
     }
