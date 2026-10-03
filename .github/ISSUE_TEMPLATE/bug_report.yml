@@ -1,0 +1,78 @@
+name: Bug report
+description: Report a defect in the vault parser, the local server or one of the views
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Please fill in the sections below.
+        Do not paste content from a private vault: a minimal synthetic page that reproduces the problem is the best repro.
+        For security vulnerabilities, please follow [SECURITY.md](../../SECURITY.md) instead.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One or two sentences describing the bug.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Vault parser (frontmatter, wikilinks, relations)
+        - Git history (timeline, ghosts, link dates)
+        - Health checks
+        - Local server / API
+        - Graph view
+        - Timeline view
+        - Overview view
+        - Health view
+        - Recall lens (retrieve.py bridge)
+        - Vault picker / open in app (macOS)
+        - CI workflow
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Commands, a minimal synthetic page (frontmatter + body) and what you clicked.
+      placeholder: |
+        1. Create wiki/entities/example.md with ...
+        2. npm start -- --vault /path/to/vault
+        3. Open the graph view and select "example"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include error messages from the terminal or the browser console, or screenshots of a synthetic vault.
+    validations:
+      required: true
+
+  - type: input
+    id: commit
+    attributes:
+      label: Commit SHA or version
+      description: The commit you are running against.
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Node version, browser, git version — whatever is relevant.
