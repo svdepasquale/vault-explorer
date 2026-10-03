@@ -1,0 +1,802 @@
+/*
+ * Recall view. Colors are the app tokens; the two bar colors come from the
+ * validated palette (palette.ts) as --recall-rank-bar (accent: the score that
+ * ordered the list) and --recall-context-bar (muted ink: the other score).
+ * Both clear 3:1 on the surface in light and dark.
+ */
+
+.recall-view {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  background: var(--plane);
+}
+
+.recall-page {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 26px 24px 40px;
+}
+
+.recall-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.recall-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+
+.recall-h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.recall-lede {
+  margin: 0;
+  color: var(--ink-2);
+}
+
+/* ── query bar ─────────────────────────────────────────────────────────── */
+
+.recall-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 14px 12px;
+}
+
+.recall-form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.recall-input {
+  height: 34px;
+  padding: 0 12px;
+  font-size: 15px;
+  background: var(--plane);
+}
+
+.recall-input::placeholder {
+  color: var(--ink-3);
+}
+
+.recall-top {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 7px;
+}
+
+.recall-top-label,
+.recall-history-label {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.recall-top .segmented button {
+  min-width: 30px;
+  height: 26px;
+  font-variant-numeric: tabular-nums;
+}
+
+.recall-run {
+  flex: none;
+  min-width: 96px;
+  height: 34px;
+  font-weight: 600;
+}
+
+.recall-form-hint {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.recall-history {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--grid);
+}
+
+.recall-history-label {
+  margin-right: 2px;
+}
+
+.recall-chip {
+  max-width: 280px;
+  padding: 2px 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--wash);
+  color: var(--ink-2);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.recall-chip:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  color: var(--ink);
+}
+
+.recall-chip:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.recall-history-clear {
+  margin-left: 4px;
+  font-size: 12px;
+}
+
+.recall-spinner {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: recall-spin 0.8s linear infinite;
+}
+
+@keyframes recall-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recall-spinner {
+    animation: none;
+    border-right-color: currentColor;
+    opacity: 0.6;
+  }
+}
+
+/* ── states ────────────────────────────────────────────────────────────── */
+
+.recall-intro {
+  max-width: 700px;
+  padding: 10px 2px 2px;
+  color: var(--ink-2);
+}
+
+.recall-intro p {
+  margin: 0 0 6px;
+}
+
+.recall-intro .recall-intro-title {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.recall-running {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 2px 2px;
+  color: var(--ink-2);
+}
+
+.recall-running-time {
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.recall-running-hint {
+  flex-basis: 100%;
+  padding-left: 23px;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.recall-error,
+.recall-callout {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.recall-error-icon,
+.recall-callout-icon,
+.recall-badge-icon,
+.recall-mark-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.recall-error-icon,
+.recall-callout-icon {
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  font-size: 12px;
+}
+
+.recall-error-icon {
+  background: var(--status-critical);
+  color: #ffffff;
+}
+
+.recall-callout-icon {
+  background: var(--grid);
+  box-shadow: inset 0 0 0 1px var(--baseline);
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+}
+
+.recall-error-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.recall-error p,
+.recall-callout p {
+  margin: 0;
+}
+
+.recall-error-title,
+.recall-callout-title {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.recall-error-hint,
+.recall-callout p:not(.recall-callout-title) {
+  color: var(--ink-2);
+}
+
+.recall-cmd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 5px 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--wash);
+}
+
+.recall-cmd code {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.recall-error .recall-error-detail {
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.recall-error-code {
+  color: var(--ink-3);
+}
+
+/* ── results ───────────────────────────────────────────────────────────── */
+
+.recall-results {
+  overflow: hidden;
+  transition: opacity 0.15s ease;
+}
+
+.recall-results.is-stale {
+  opacity: 0.45;
+}
+
+.recall-results-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.recall-results-title {
+  display: flex;
+  flex: 1 1 260px;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.recall-results-query {
+  overflow: hidden;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recall-results-count {
+  color: var(--ink-3);
+  font-size: 12px;
+}
+
+.recall-results-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.recall-results-note {
+  margin: 0;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--grid);
+  background: var(--wash);
+  color: var(--ink-2);
+  font-size: 12.5px;
+}
+
+.recall-results-empty {
+  margin: 0;
+  padding: 18px 14px;
+  color: var(--ink-2);
+}
+
+.recall-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.recall-badge.is-degraded {
+  padding-left: 5px;
+  color: var(--ink);
+}
+
+.recall-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-good);
+}
+
+.recall-badge-icon,
+.recall-mark-icon {
+  width: 15px;
+  height: 15px;
+  background: var(--status-warning);
+  color: #0b0b0b;
+  font-size: 10px;
+}
+
+.recall-elapsed {
+  color: var(--ink-2);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: default;
+  text-decoration: underline dotted var(--ink-3);
+  text-underline-offset: 3px;
+}
+
+.recall-badge:hover,
+.recall-elapsed:hover {
+  color: var(--ink);
+}
+
+/* Column heads and rows share one grid so the score bars line up into columns. */
+.recall-colhead,
+.recall-row {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 150px 150px;
+  column-gap: 16px;
+  padding-right: 16px;
+  padding-left: 12px;
+}
+
+.recall-colhead.is-single,
+.recall-list.is-single .recall-row {
+  grid-template-columns: 26px minmax(0, 1fr) 150px;
+}
+
+.recall-colhead {
+  align-items: end;
+  padding-top: 9px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--grid);
+  color: var(--ink-3);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.recall-colhead-rank {
+  text-align: right;
+}
+
+.recall-colhead-score {
+  justify-self: start;
+  border-radius: 4px;
+  cursor: help;
+}
+
+.recall-colhead-score:hover {
+  color: var(--ink-2);
+}
+
+.recall-colhead-term {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+
+.recall-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recall-row {
+  align-items: center;
+  row-gap: 6px;
+  padding-top: 11px;
+  padding-bottom: 12px;
+  border-top: 1px solid var(--grid);
+}
+
+.recall-row:first-child {
+  border-top: 0;
+}
+
+.recall-row.is-selected {
+  background: var(--wash);
+  box-shadow: inset 3px 0 0 var(--ink);
+}
+
+.recall-rank {
+  grid-row: span 2;
+  align-self: start;
+  padding-top: 1px;
+  color: var(--ink-3);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.recall-page-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.recall-page-cell .page-link {
+  flex: none;
+  max-width: 50%;
+  margin-left: -4px;
+  font-weight: 600;
+}
+
+.recall-page-title {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink-2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recall-chunk {
+  flex: none;
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.recall-path {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recall-mark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  padding: 0 7px;
+  border-radius: 9px;
+  background: var(--wash-strong);
+  color: var(--ink-2);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.recall-mark.is-warning {
+  padding-left: 2px;
+}
+
+.recall-snippet {
+  grid-column: 2 / -1;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.recall-more {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ── score cells ───────────────────────────────────────────────────────── */
+
+.recall-score {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 46px;
+  align-items: center;
+  column-gap: 8px;
+  margin: -4px -6px;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  cursor: default;
+}
+
+.recall-score:hover,
+.recall-score:focus-visible {
+  background: var(--wash-strong);
+}
+
+/* Column heads name the scores in the wide layout; screen readers always get the label. */
+.recall-score-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.recall-track {
+  position: relative;
+  height: 8px;
+}
+
+/* Zero baseline: a recessive hairline that lines up down the column. */
+.recall-track::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  left: var(--recall-zero);
+  width: 1px;
+  background: var(--baseline);
+}
+
+.recall-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 0 4px 4px 0;
+  background: var(--recall-context-bar);
+}
+
+.recall-bar.is-negative {
+  border-radius: 4px 0 0 4px;
+}
+
+.is-ranking .recall-bar {
+  background: var(--recall-rank-bar);
+}
+
+/* Context score: thinner, so the score that ordered the list carries the weight. */
+.is-context .recall-bar {
+  top: 2px;
+  bottom: 2px;
+}
+
+/* Beyond the domain: a surface-colored break near the data end. */
+.recall-bar.is-clipped::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 7px;
+  bottom: 0;
+  width: 2px;
+  background: var(--surface);
+}
+
+.recall-bar.is-negative.is-clipped::after {
+  right: auto;
+  left: 7px;
+}
+
+.recall-score-value {
+  color: var(--ink-2);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.is-ranking .recall-score-value {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ── tooltip (portalled to body) ───────────────────────────────────────── */
+
+.recall-tip {
+  position: fixed;
+  z-index: 60;
+  max-width: 320px;
+  padding: 8px 10px;
+  pointer-events: none;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.recall-tip p {
+  margin: 4px 0 0;
+}
+
+.recall-tip-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+}
+
+.recall-tip-value {
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.recall-tip-label {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.recall-tip-value + .recall-tip-label {
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+.recall-tip .recall-tip-raw {
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+/* ── footnote ──────────────────────────────────────────────────────────── */
+
+.recall-foot {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--grid);
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.recall-foot p {
+  max-width: 780px;
+  margin: 0;
+}
+
+.recall-foot strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ── narrow: the page panel is open or the window is small ─────────────── */
+
+@container (max-width: 640px) {
+  .recall-form-row {
+    flex-wrap: wrap;
+  }
+
+  .recall-input {
+    flex-basis: 100%;
+  }
+
+  .recall-run {
+    margin-left: auto;
+  }
+
+  .recall-colhead {
+    display: none;
+  }
+
+  .recall-row,
+  .recall-list.is-single .recall-row {
+    grid-template-columns: 22px minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 14px;
+  }
+
+  .recall-rank {
+    grid-row: span 3;
+  }
+
+  .recall-page-cell {
+    grid-column: 2 / -1;
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+
+  .recall-page-title {
+    flex-basis: 100%;
+    order: 5;
+  }
+
+  .recall-score {
+    grid-template-columns: auto minmax(0, 1fr) 46px;
+  }
+
+  .recall-score-label {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    color: var(--ink-3);
+    font-size: 11px;
+    font-weight: 600;
+  }
+}

@@ -1,0 +1,658 @@
+/*
+ * Overview view. Colors come from tokens.css only; charts get palette.ts hexes
+ * (Plot marks) and inherit ink through currentColor. Layout follows the view's
+ * own width (container queries), so it reflows when the page panel opens.
+ */
+
+.overview {
+  height: 100%;
+  overflow: auto;
+  container-type: inline-size;
+  background: var(--plane);
+}
+
+.overview-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 18px 24px 48px;
+}
+
+.overview-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+
+.overview-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.overview-meta {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: 12px;
+}
+
+.overview-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.overview-section-title {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.overview-empty {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+/* ── grids ─────────────────────────────────────────────────────────────── */
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+/* Two sections side by side, each card as tall as its own content. */
+.overview-split {
+  align-items: start;
+  gap: 22px 14px;
+}
+
+/* ── cards ─────────────────────────────────────────────────────────────── */
+
+.overview-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px 16px 16px;
+}
+
+.overview-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.overview-card-heading {
+  min-width: 0;
+}
+
+.overview-card-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.overview-card-sub {
+  margin: 2px 0 0;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.overview-toggle {
+  flex: none;
+}
+
+.overview-toggle button {
+  height: 20px;
+  padding: 0 7px;
+  font-size: 11px;
+}
+
+/* ── KPI tiles ─────────────────────────────────────────────────────────── */
+
+.overview-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.overview-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 12px 14px 13px;
+}
+
+.overview-kpi-pages {
+  grid-column: span 2;
+}
+
+.overview-kpi-label {
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.overview-kpi-value {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 6px;
+  color: var(--ink);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.overview-kpi-unit {
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.overview-kpi-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.overview-kpi-detail p {
+  margin: 0;
+}
+
+.overview-kpi-detail strong {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.overview-kpi-muted {
+  color: var(--ink-3);
+}
+
+.overview-kpi-detail .page-link {
+  margin-left: -4px;
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-decoration-color: var(--baseline);
+  text-underline-offset: 2px;
+}
+
+.overview-kinds {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 3px 10px;
+  margin: 2px 0 2px;
+  padding: 0;
+  list-style: none;
+}
+
+.overview-kinds li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.overview-kinds-n {
+  min-width: 2ch;
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.overview-kinds-label {
+  overflow: hidden;
+  color: var(--ink-2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.overview-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Meter: the fill carries the state, the track is a wash of the same hue. */
+.overview-meter {
+  --meter: var(--kind-entity);
+  position: relative;
+  height: 8px;
+  margin: 6px 0 4px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--meter) 22%, var(--surface));
+}
+
+.overview-meter.is-warning {
+  --meter: var(--status-warning);
+}
+
+.overview-meter.is-error {
+  --meter: var(--status-critical);
+}
+
+.overview-meter-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 4px;
+  background: var(--meter);
+}
+
+.overview-meter-tick {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--ink-2);
+  box-shadow: 0 0 0 1px var(--surface);
+}
+
+/* ── charts ────────────────────────────────────────────────────────────── */
+
+.overview-chart {
+  position: relative;
+}
+
+.overview-chart.is-pickable svg {
+  cursor: pointer;
+}
+
+.overview-tip {
+  position: absolute;
+  z-index: 10;
+  min-width: 150px;
+  max-width: 280px;
+  padding: 8px 10px;
+  pointer-events: none;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.overview-tip-value {
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.overview-tip-unit {
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.overview-tip-label {
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+.overview-tip-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  color: var(--ink-2);
+}
+
+.overview-tip-key {
+  flex: none;
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--ink-3);
+}
+
+.overview-tip-note {
+  margin-top: 4px;
+  color: var(--ink-3);
+}
+
+.overview-tip-hint {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--grid);
+  color: var(--ink-3);
+  font-size: 11.5px;
+}
+
+.overview-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: -4px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.overview-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.overview-swatch {
+  flex: none;
+  width: 12px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+/* ── table view ────────────────────────────────────────────────────────── */
+
+.overview-table-wrap {
+  overflow-x: auto;
+}
+
+.overview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.overview-table th,
+.overview-table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--grid);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.overview-table th:first-child {
+  padding-left: 0;
+}
+
+.overview-table thead th {
+  color: var(--ink-3);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.overview-table tbody th {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.overview-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.overview-table-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.overview-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.overview-table-pick {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--baseline);
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.overview-table-pick:hover {
+  text-decoration-color: var(--ink-2);
+}
+
+/* ── now (hot.md) ──────────────────────────────────────────────────────── */
+
+.overview-now-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px 32px;
+}
+
+.overview-now-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.overview-hot-section {
+  min-width: 0;
+}
+
+.overview-hot-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 4px;
+  color: var(--ink-3);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.overview-hot-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.overview-hot-item {
+  position: relative;
+  padding: 7px 0 7px 14px;
+  border-top: 1px solid var(--grid);
+}
+
+.overview-hot-item:first-child {
+  border-top: 0;
+}
+
+.overview-hot-item::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: calc(7px + 0.62em);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ink-3);
+}
+
+.overview-hot-text.markdown {
+  color: var(--ink);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.overview-hot-text.is-clamped {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.overview-hot-more {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.overview-hot-more:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Collapsed: sits on the end of the second line, fading the clipped text out. */
+.overview-hot-more.is-overlay {
+  position: absolute;
+  right: 0;
+  bottom: 7px;
+  padding-left: 32px;
+  background: linear-gradient(to right, transparent, var(--surface) 26px);
+}
+
+/* ── hubs and outliers ─────────────────────────────────────────────────── */
+
+.overview-hub-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.overview-hub-row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  border-top: 1px solid var(--grid);
+  font-size: 13px;
+}
+
+.overview-hub-list.has-extra .overview-hub-row {
+  grid-template-columns: 20px minmax(0, 1fr) auto auto;
+}
+
+.overview-hub-row:first-child {
+  border-top: 0;
+}
+
+.overview-hub-rank {
+  color: var(--ink-3);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.overview-hub-page {
+  display: flex;
+  min-width: 0;
+}
+
+.overview-hub-metric {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.overview-hub-unit {
+  margin-left: 3px;
+  color: var(--ink-3);
+  font-weight: 400;
+}
+
+.overview-hub-status {
+  padding: 0 7px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--wash);
+  color: var(--ink-2);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+.overview-hub-age {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.overview-hub-stale {
+  color: var(--ink-2);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+/* ── responsive (the view's width, not the window's) ───────────────────── */
+
+@container (max-width: 639px) {
+  .overview-inner {
+    padding: 14px 16px 40px;
+  }
+}
+
+@container (min-width: 640px) {
+  .overview-kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@container (min-width: 760px) {
+  .overview-grid-2,
+  .overview-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .overview-grid-3 > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+@container (min-width: 900px) {
+  .overview-now-grid.has-aside {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+}
+
+@container (min-width: 1180px) {
+  .overview-kpis {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+
+  .overview-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .overview-grid-3 > :last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+}

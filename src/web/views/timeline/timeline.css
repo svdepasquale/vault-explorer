@@ -1,0 +1,636 @@
+/* Timeline view: a scrollable page of cards on the plane. Colors come from tokens.css only. */
+
+.timeline-root {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  container-type: inline-size;
+  background: var(--plane);
+}
+
+.timeline-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 22px 24px 48px;
+}
+
+.timeline-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.timeline-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.timeline-subtitle {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+/* ── stat strip ────────────────────────────────────────────────────────── */
+
+.timeline-stats {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  overflow: hidden;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.timeline-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 12px 16px 13px;
+  background: var(--surface);
+}
+
+.timeline-stat-label {
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.timeline-stat-value {
+  margin: 0;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.timeline-stat-note {
+  margin: 0;
+  overflow: hidden;
+  color: var(--ink-3);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── layout ────────────────────────────────────────────────────────────── */
+
+.timeline-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'activity' 'feed' 'growth' 'lifelines';
+  gap: 16px;
+}
+
+.timeline-area-activity {
+  grid-area: activity;
+}
+
+.timeline-area-feed {
+  grid-area: feed;
+  min-width: 0;
+}
+
+.timeline-area-growth {
+  grid-area: growth;
+}
+
+.timeline-area-lifelines {
+  grid-area: lifelines;
+}
+
+.timeline-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px 18px 18px;
+}
+
+.timeline-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.timeline-card-title {
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.timeline-card-sub {
+  max-width: 72ch;
+  margin: 2px 0 0;
+  color: var(--ink-2);
+  font-size: 12.5px;
+}
+
+/* Plot hosts: tips may overflow the SVG, so the hovered chart paints above its neighbours. */
+.timeline-plot {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.timeline-plot:hover {
+  z-index: 3;
+}
+
+.timeline-root .plot-figure svg {
+  --plot-background: var(--surface);
+}
+
+.timeline-root g[aria-label='tip'] {
+  color: var(--ink);
+}
+
+.timeline-root g[aria-label='tip'] path {
+  stroke: var(--border-strong);
+}
+
+.timeline-root g[aria-label='tip'] text > tspan:first-child {
+  font-weight: 650;
+}
+
+/* ── activity ──────────────────────────────────────────────────────────── */
+
+.timeline-day-pick {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-2);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.timeline-day-pick strong {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.timeline-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.timeline-calendar-plot svg {
+  cursor: pointer;
+}
+
+.timeline-scale {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.timeline-scale-title {
+  margin-right: 2px;
+  color: var(--ink-3);
+}
+
+.timeline-scale-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline-swatch {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.timeline-travel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--grid);
+}
+
+.timeline-travel-label {
+  color: var(--ink-3);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.timeline-date {
+  flex: none;
+  width: 150px;
+  height: 26px;
+  font-size: 12.5px;
+}
+
+.timeline-travel-state {
+  color: var(--ink-2);
+  font-size: 12.5px;
+}
+
+/* ── growth ────────────────────────────────────────────────────────────── */
+
+.timeline-figure {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+}
+
+.timeline-figure + .timeline-figure {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--grid);
+}
+
+.timeline-figure-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.timeline-figure-title {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.timeline-figure-sub {
+  color: var(--ink-3);
+  font-size: 12px;
+}
+
+.timeline-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12.5px;
+}
+
+.timeline-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timeline-legend-swatch {
+  flex: none;
+  width: 12px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.timeline-legend-ghost {
+  flex: none;
+}
+
+.timeline-legend-label {
+  color: var(--ink-2);
+}
+
+.timeline-legend-count {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ── lifelines ─────────────────────────────────────────────────────────── */
+
+.timeline-lifelines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timeline-lifelines .timeline-legend {
+  margin-bottom: 6px;
+}
+
+.timeline-lifelines-axis {
+  z-index: 0;
+}
+
+.timeline-lifelines-scroll {
+  max-height: 560px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-top: 1px solid var(--grid);
+  border-bottom: 1px solid var(--grid);
+}
+
+.timeline-lifelines-chart svg {
+  cursor: pointer;
+}
+
+.timeline-tooltip {
+  position: absolute;
+  z-index: 5;
+  width: max-content;
+  max-width: 300px;
+  padding: 8px 10px;
+  pointer-events: none;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.timeline-tooltip-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.timeline-tooltip-tag {
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--wash-strong);
+  color: var(--ink-2);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.timeline-tooltip-sub {
+  overflow: hidden;
+  color: var(--ink-2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-tooltip-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  color: var(--ink);
+}
+
+.timeline-tooltip-swatch {
+  flex: none;
+  width: 10px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.timeline-tooltip-hint {
+  margin-top: 4px;
+  color: var(--ink-3);
+  font-size: 11px;
+}
+
+/* ── event feed ────────────────────────────────────────────────────────── */
+
+.timeline-feed {
+  gap: 10px;
+  max-height: 640px;
+  padding-bottom: 0;
+}
+
+.timeline-feed-filters {
+  display: flex;
+  gap: 8px;
+}
+
+.timeline-feed-search {
+  flex: 1;
+  min-width: 0;
+}
+
+.timeline-feed-kind {
+  flex: none;
+  max-width: 45%;
+}
+
+.timeline-feed-active {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.timeline-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 3px 0 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--wash);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.timeline-filter-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.timeline-filter-clear:hover {
+  background: var(--wash-strong);
+  color: var(--ink);
+}
+
+.timeline-feed-scroll {
+  flex: 1;
+  min-height: 0;
+  margin: 0 -18px;
+  padding: 0 18px 16px;
+  overflow: auto;
+  border-top: 1px solid var(--grid);
+}
+
+.timeline-events {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-event {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--grid);
+}
+
+.timeline-event-when {
+  display: flex;
+  flex-direction: column;
+  color: var(--ink-3);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+
+.timeline-event-date {
+  color: var(--ink-2);
+}
+
+.timeline-event-subject {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.timeline-event-hash {
+  color: var(--ink-3);
+  font-size: 11px;
+  text-decoration: none;
+}
+
+a.timeline-event-hash:hover {
+  color: var(--ink-2);
+  text-decoration: underline;
+}
+
+.timeline-event-changes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px 8px;
+  margin: 6px 0 0 -2px;
+}
+
+.timeline-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 12px;
+}
+
+.timeline-chip .change {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  font-size: 9.5px;
+}
+
+.timeline-chip .page-link {
+  min-width: 0;
+  padding: 1px 4px;
+}
+
+.timeline-chip-gone {
+  overflow: hidden;
+  padding: 1px 4px;
+  color: var(--ink-3);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-chip-from {
+  color: var(--ink-3);
+  font-size: 11px;
+}
+
+.timeline-event-more {
+  font-size: 12px;
+}
+
+.timeline-feed-more {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+}
+
+.timeline-feed-remaining {
+  color: var(--ink-3);
+  font-size: 12px;
+}
+
+.timeline-empty {
+  margin: 16px 0;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+/* ── responsive: the page panel or a narrow window shrinks the container ── */
+
+@container (min-width: 1120px) {
+  .timeline-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 384px);
+    grid-template-areas:
+      'activity feed'
+      'growth feed'
+      'lifelines lifelines';
+  }
+
+  /* The feed takes the height of the two cards beside it and scrolls inside. */
+  .timeline-area-feed {
+    position: relative;
+  }
+
+  .timeline-area-feed > .timeline-feed {
+    position: absolute;
+    inset: 0;
+    max-height: none;
+  }
+}
+
+@container (max-width: 880px) {
+  .timeline-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 520px) {
+  .timeline-page {
+    padding: 16px 12px 40px;
+  }
+
+  .timeline-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .timeline-feed-filters {
+    flex-wrap: wrap;
+  }
+
+  .timeline-feed-kind {
+    max-width: none;
+  }
+}

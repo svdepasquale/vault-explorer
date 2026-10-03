@@ -1,0 +1,658 @@
+/*
+ * Health view. Colors come from tokens.css only: ink tokens for text, status
+ * tokens only where they mean severity (always beside an icon + label), the
+ * accent / sequential steps for the hot.md meter below its warning threshold.
+ * Layout follows the view's own width (container queries), so it also adapts
+ * when the page panel opens.
+ */
+
+.health-view {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  background: var(--plane);
+  container: health / inline-size;
+}
+
+.health-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 24px 40px;
+}
+
+.health-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 14px;
+}
+
+.health-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.health-subtitle {
+  margin: 0;
+  color: var(--ink-2);
+}
+
+.health-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.health-muted {
+  color: var(--ink-3);
+}
+
+.health-note {
+  margin: 6px 0 0;
+  color: var(--ink-2);
+  font-size: 12.5px;
+}
+
+.health-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.health-clickable {
+  cursor: pointer;
+}
+
+/* ── layout ────────────────────────────────────────────────────────────── */
+
+.health-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+
+.health-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+@container health (min-width: 960px) {
+  .health-top {
+    grid-template-columns: minmax(0, 1.6fr) minmax(340px, 1fr);
+    align-items: start;
+  }
+}
+
+/* ── severity tiles and check cards (filter toggles) ───────────────────── */
+
+.health-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.health-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.health-tile,
+.health-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  text-align: left;
+  cursor: pointer;
+}
+
+.health-tile:hover:not(:disabled),
+.health-card:hover {
+  background: linear-gradient(var(--wash), var(--wash)), var(--surface);
+}
+
+.health-tile[aria-pressed='true'],
+.health-card[aria-pressed='true'] {
+  border-color: var(--ink);
+  box-shadow:
+    inset 0 0 0 1px var(--ink),
+    var(--shadow);
+}
+
+.health-tile:disabled {
+  cursor: default;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+.health-tile-value {
+  font-size: 28px;
+  font-weight: 650;
+  line-height: 1.1;
+}
+
+.health-tile-meta {
+  color: var(--ink-3);
+  font-size: 12px;
+}
+
+.health-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.health-card-count {
+  font-size: 22px;
+  font-weight: 650;
+  line-height: 1;
+}
+
+.health-card-label {
+  font-weight: 650;
+}
+
+.health-card-desc {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--ink-2);
+  font-size: 12.5px;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.health-passing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 12px;
+}
+
+.health-pass .severity-icon {
+  background: var(--status-good);
+  color: #0b0b0b;
+}
+
+.health-passing-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.health-chip {
+  padding: 1px 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--wash);
+  color: var(--ink-2);
+  font-size: 12px;
+  cursor: default;
+}
+
+/* ── side cards: hot.md meter, relation symmetry ───────────────────────── */
+
+.health-panel {
+  padding: 14px 16px 16px;
+}
+
+.health-panel-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px 12px;
+}
+
+.health-panel-header .health-section-title {
+  margin: 0;
+}
+
+.health-hot-figure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  margin: 10px 0 12px;
+}
+
+.health-hot-value {
+  font-size: 26px;
+  font-weight: 650;
+  line-height: 1.1;
+}
+
+.health-hot-of {
+  color: var(--ink-2);
+}
+
+.health-meter-track {
+  position: relative;
+  height: 12px;
+  border-radius: 0 4px 4px 0;
+}
+
+.health-meter-fill {
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+}
+
+.health-meter-mark {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 0;
+  border-left: 1px solid var(--ink-3);
+}
+
+.health-meter-budget {
+  margin-left: -1px;
+  border-left: 2px solid var(--ink);
+}
+
+.health-meter-scale {
+  position: relative;
+  height: 16px;
+  margin-top: 6px;
+  color: var(--ink-3);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.health-meter-scale span {
+  position: absolute;
+  top: 0;
+  padding-right: 4px;
+  transform: translateX(-100%);
+  white-space: nowrap;
+}
+
+.health-meter-scale .health-meter-zero {
+  left: 0;
+  transform: none;
+}
+
+.health-hot-status {
+  margin: 8px 0 0;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.health-hot-page {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.health-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.health-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.health-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 10px;
+  border-radius: 0 3px 3px 0;
+}
+
+.health-one-sided {
+  background: var(--status-warning);
+}
+
+.health-both {
+  background: var(--ink-3);
+}
+
+.health-sym-table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.health-sym-table th,
+.health-sym-table td {
+  padding: 4px 6px;
+  vertical-align: middle;
+}
+
+.health-sym-table th {
+  font-weight: 400;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.health-sym-row.health-clickable:hover {
+  background: var(--wash);
+}
+
+.health-sym-name {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+button.health-sym-name {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--baseline);
+  text-underline-offset: 2px;
+}
+
+button.health-sym-name:hover {
+  text-decoration-color: var(--ink-2);
+}
+
+.health-sym-bar-cell {
+  width: 100%;
+}
+
+.health-sym-bar {
+  display: flex;
+  gap: 2px;
+  min-width: 6px;
+  height: 10px;
+}
+
+.health-sym-seg {
+  flex: 1 1 0;
+  min-width: 2px;
+}
+
+.health-sym-seg:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.health-sym-num {
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ── issue list ────────────────────────────────────────────────────────── */
+
+.health-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.health-toolbar .health-toolbar-title {
+  margin: 0 4px 0 0;
+}
+
+.health-toolbar .segmented button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.health-seg-count {
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.health-check-select {
+  max-width: 220px;
+}
+
+.health-search {
+  flex: 1 1 180px;
+  max-width: 300px;
+}
+
+.health-toolbar-end {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.health-toolbar-count {
+  color: var(--ink-3);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.health-copy {
+  min-width: 128px;
+}
+
+.health-copy-fallback {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 14px 0;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--wash);
+}
+
+.health-copy-fallback .health-note {
+  margin: 0;
+}
+
+.health-copy-text {
+  width: 100%;
+  min-height: 120px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.health-groups {
+  padding: 4px 8px 12px;
+}
+
+.health-group + .health-group {
+  margin-top: 4px;
+  border-top: 1px solid var(--grid);
+}
+
+.health-group-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  padding: 14px 8px 6px;
+}
+
+.health-group-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.health-group-desc {
+  color: var(--ink-3);
+  font-size: 12.5px;
+}
+
+.health-rows {
+  display: grid;
+  column-gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.health-row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: baseline;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.health-row.health-clickable:hover {
+  background: var(--wash);
+}
+
+.health-row.health-current {
+  background: var(--wash-strong);
+  box-shadow: inset 2px 0 0 var(--ink);
+}
+
+.health-cell {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+.health-row-msg {
+  display: block;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+
+.health-other-label {
+  color: var(--ink-3);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.health-graph-btn {
+  height: 22px;
+  color: var(--ink-2);
+}
+
+.health-graph-btn:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+.health-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 36px 16px;
+  color: var(--ink-2);
+  text-align: center;
+}
+
+.health-empty p {
+  margin: 0;
+}
+
+/* ── thresholds footnote ───────────────────────────────────────────────── */
+
+.health-footnote {
+  padding: 0 4px;
+  color: var(--ink-2);
+  font-size: 12.5px;
+}
+
+.health-footnote ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.health-footnote strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ── narrow views (small windows, or the page panel open on a laptop) ──── */
+
+@container health (max-width: 719px) {
+  .health-inner {
+    padding: 14px 12px 32px;
+  }
+
+  .health-tiles {
+    gap: 8px;
+  }
+
+  .health-tile {
+    padding: 10px;
+  }
+
+  .health-toolbar-end {
+    margin-left: 0;
+  }
+
+  .health-rows {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .health-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 8px;
+  }
+
+  .health-row-msg {
+    order: 5;
+    flex-basis: 100%;
+  }
+}
