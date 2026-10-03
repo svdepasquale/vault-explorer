@@ -22,6 +22,8 @@ export interface EdgeAttrs {
   related: boolean;
   /** Any relation of the pair declared on one page only. */
   asymmetric: boolean;
+  /** Epoch ms when the pair first got connected (git), else when its younger page was born. */
+  since: number | null;
   weight: number;
   size: number;
   color: string;
@@ -65,6 +67,7 @@ export function buildGraph(derived: Derived): VaultGraph {
     relations: Relation[];
     body: number;
     related: boolean;
+    since: number | null;
   }
   const pairs = new Map<string, Pair>();
   const pairOf = (x: string, y: string): Pair => {
@@ -72,29 +75,47 @@ export function buildGraph(derived: Derived): VaultGraph {
     const key = `${a}\u0000${b}`;
     let pair = pairs.get(key);
     if (!pair) {
-      pair = { a, b, relations: [], body: 0, related: false };
+      pair = { a, b, relations: [], body: 0, related: false, since: null };
       pairs.set(key, pair);
     }
     return pair;
+  };
+  const earliest = (pair: Pair, iso: string | null): void => {
+    if (!iso) return;
+    const t = Date.parse(iso);
+    if (!Number.isNaN(t) && (pair.since === null || t < pair.since)) pair.since = t;
   };
   for (const l of derived.model.links) {
     const pair = pairOf(l.source, l.target);
     pair.body += l.body;
     pair.related ||= l.related;
+    earliest(pair, l.since);
   }
-  for (const r of derived.model.relations) pairOf(r.from, r.to).relations.push(r);
+  for (const r of derived.model.relations) {
+    const pair = pairOf(r.from, r.to);
+    pair.relations.push(r);
+    earliest(pair, r.since);
+  }
 
   for (const pair of pairs.values()) {
     if (!graph.hasNode(pair.a) || !graph.hasNode(pair.b)) continue;
     const first = pair.relations[0];
     const [source, target] = first ? [first.from, first.to] : [pair.a, pair.b];
     const typed = pair.relations.length > 0;
+    let since = pair.since;
+    if (since === null) {
+      const pa = derived.pageById.get(pair.a);
+      const pb = derived.pageById.get(pair.b);
+      const born = [pa && derived.bornAt(pa), pb && derived.bornAt(pb)].filter((t): t is number => typeof t === 'number');
+      since = born.length ? Math.max(...born) : null;
+    }
     graph.addEdgeWithKey(`${pair.a}\u0000${pair.b}`, source, target, {
       relations: pair.relations,
       predicates: [...new Set(pair.relations.map((r) => r.predicate))],
       body: pair.body,
       related: pair.related,
       asymmetric: pair.relations.some((r) => r.hasInverse && !(r.declaredOnFrom && r.declaredOnTo)),
+      since,
       weight: (typed ? 2 : 0) + Math.log2(1 + pair.body) + (pair.related ? 0.5 : 0),
       size: typed ? 1.6 : 0.6 + 0.25 * Math.log2(1 + pair.body),
       color: '#888888',
@@ -184,4 +205,32 @@ export function layoutGraph(graph: VaultGraph, previous: Positions, options: { f
     graph.mergeNodeAttributes(node, { x, y });
     previous.set(node, { x, y });
   });
+}
+
+const POSITIONS_KEY = 'vault-explorer.positions:';
+
+/** Layout positions remembered per vault in localStorage, so the map is stable across launches. */
+export function loadPositions(root: string): Positions {
+  const positions: Positions = new Map();
+  try {
+    const raw = localStorage.getItem(POSITIONS_KEY + root);
+    if (!raw) return positions;
+    const data = JSON.parse(raw) as Record<string, [number, number]>;
+    for (const [id, xy] of Object.entries(data)) {
+      if (Array.isArray(xy) && Number.isFinite(xy[0]) && Number.isFinite(xy[1])) positions.set(id, { x: xy[0], y: xy[1] });
+    }
+  } catch {
+    /* storage blocked or corrupt: fall back to a fresh layout */
+  }
+  return positions;
+}
+
+export function savePositions(root: string, positions: Positions): void {
+  try {
+    const data: Record<string, [number, number]> = {};
+    for (const [id, p] of positions) data[id] = [Math.round(p.x * 100) / 100, Math.round(p.y * 100) / 100];
+    localStorage.setItem(POSITIONS_KEY + root, JSON.stringify(data));
+  } catch {
+    /* ignore: positions just do not persist */
+  }
 }

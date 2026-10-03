@@ -1174,6 +1174,87 @@ a.history-hash:hover {
   font-weight: 600;
 }
 
+.graph-canvas-3d {
+  overflow: hidden;
+}
+
+.timebar-launch {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 6;
+  box-shadow: var(--shadow);
+}
+
+.timebar {
+  position: absolute;
+  left: 272px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+}
+
+.timebar-play {
+  width: 34px;
+  font-size: 11px;
+}
+
+.timebar-date {
+  min-width: 96px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.timebar-track {
+  position: relative;
+  flex: 1;
+  min-width: 120px;
+  height: 34px;
+}
+
+.timebar-hist {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  width: 100%;
+  height: 20px;
+}
+
+.timebar-hist rect.past {
+  fill: var(--ink-2);
+}
+
+.timebar-hist rect.future {
+  fill: var(--baseline);
+}
+
+.timebar-range {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  margin: 0;
+  accent-color: var(--ink);
+}
+
+.timebar-counts {
+  color: var(--ink-2);
+  font-size: 12px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.timebar-speed {
+  height: 26px;
+  font-size: 12px;
+}
+
 /* ── vault picker ──────────────────────────────────────────────────────── */
 
 .modal-backdrop {

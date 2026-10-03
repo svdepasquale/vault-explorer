@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@observablehq/plot": "0.6.17",
+    "3d-force-graph": "1.80.1",
     "d3": "7.9.0",
     "graphology": "0.26.0",
     "graphology-layout-forceatlas2": "0.10.1",
@@ -29,6 +30,8 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "sigma": "3.0.3",
+    "three": "0.186.1",
+    "three-spritetext": "1.10.0",
     "yaml": "2.9.1",
     "zustand": "5.0.15"
   },
@@ -38,6 +41,7 @@
     "@types/node": "26.6.4",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "@types/three": "0.186.0",
     "@vitejs/plugin-react": "6.1.1",
     "graphology-types": "0.24.8",
     "typescript": "7.0.2",

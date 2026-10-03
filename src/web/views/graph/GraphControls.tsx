@@ -52,6 +52,25 @@ export function GraphControls({
       {!collapsed && (
         <>
           <div className="control-group">
+            <span className="control-label">View</span>
+            <div className="segmented" role="radiogroup" aria-label="Dimension">
+              {(['2d', '3d'] as const).map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  role="radio"
+                  aria-checked={settings.dimension === d}
+                  className={settings.dimension === d ? 'active' : ''}
+                  title={d === '2d' ? 'Flat map (sigma.js)' : 'Rotatable 3D force graph (three.js)'}
+                  onClick={() => updateGraph({ dimension: d })}
+                >
+                  {d.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="control-group">
             <span className="control-label">Color</span>
             <div className="segmented" role="radiogroup" aria-label="Color by">
               {COLOR_MODES.map((m) => (
@@ -161,9 +180,11 @@ export function GraphControls({
             <button type="button" className="btn btn-small" onClick={onFit}>
               Fit
             </button>
-            <button type="button" className="btn btn-small" onClick={onRelayout} title="Recompute the layout from scratch">
-              Re-layout
-            </button>
+            {settings.dimension === '2d' && (
+              <button type="button" className="btn btn-small" onClick={onRelayout} title="Recompute the layout from scratch">
+                Re-layout
+              </button>
+            )}
           </div>
         </>
       )}
