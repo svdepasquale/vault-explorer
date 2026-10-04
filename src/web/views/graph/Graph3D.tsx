@@ -83,7 +83,7 @@ export default function Graph3D({ graph, ctx, positions, onReady }: Graph3DProps
     if (sprite.text !== text) sprite.text = text;
     if (sprite.color !== color) sprite.color = color;
     if (sprite.strokeColor !== style.palette.surface) sprite.strokeColor = style.palette.surface;
-    sprite.visible = !!look && !look.dimmed && (look.forceLabel || hub);
+    sprite.visible = !!look && !look.dimmed && (look.forceLabel || (hub && style.settings.labels === 'always'));
     sprite.position.set(0, Math.cbrt((n.size + (look?.sizeBoost ?? 0)) ** 3 / 60) * 1.6 + 4, 0);
   };
 

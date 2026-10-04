@@ -223,7 +223,12 @@ export function Sigma2D({ graph, ctx, positions, onPositionsChange, layoutTick, 
   }, []);
 
   useEffect(() => {
-    sigmaRef.current?.refresh();
+    const sigma = sigmaRef.current;
+    if (!sigma) return;
+    // 'hover' draws only forced labels: the hovered or selected page and its neighbours,
+    // recall hits, pages new in time travel.
+    sigma.setSetting('labelRenderedSizeThreshold', ctx.settings.labels === 'hover' ? Number.POSITIVE_INFINITY : 8);
+    sigma.refresh();
   }, [ctx, hovered, layoutTick]);
 
   useEffect(() => {

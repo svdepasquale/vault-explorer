@@ -19,6 +19,8 @@ export type EmphasisField = 'domain' | 'tag' | 'status';
 export interface GraphSettings {
   /** 2D map (sigma) or 3D force graph (three.js). */
   dimension: '2d' | '3d';
+  /** 'hover': names only for the hovered/selected page and its neighbours; 'always': density-limited labels everywhere. */
+  labels: 'hover' | 'always';
   colorBy: ColorMode;
   emphasis: { field: EmphasisField; value: string | null };
   showBodyLinks: boolean;
@@ -88,6 +90,7 @@ function writeLocal(key: string, value: unknown): void {
 
 export const DEFAULT_GRAPH: GraphSettings = {
   dimension: '2d',
+  labels: 'hover',
   colorBy: 'kind',
   emphasis: { field: 'domain', value: null },
   showBodyLinks: true,

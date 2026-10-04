@@ -71,6 +71,30 @@ export function GraphControls({
           </div>
 
           <div className="control-group">
+            <span className="control-label">Labels</span>
+            <div className="segmented" role="radiogroup" aria-label="Node labels">
+              {(
+                [
+                  { id: 'hover', label: 'On hover', hint: 'Names only for the page under the pointer (or selected) and its connections' },
+                  { id: 'always', label: 'Always', hint: 'Names on every node there is room for' },
+                ] as const
+              ).map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={settings.labels === m.id}
+                  className={settings.labels === m.id ? 'active' : ''}
+                  title={m.hint}
+                  onClick={() => updateGraph({ labels: m.id })}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="control-group">
             <span className="control-label">Color</span>
             <div className="segmented" role="radiogroup" aria-label="Color by">
               {COLOR_MODES.map((m) => (
