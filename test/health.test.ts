@@ -7,7 +7,17 @@ import { makePage } from './helpers/page.ts';
 const NOW = new Date('2026-06-01T12:00:00Z');
 
 function health(input: Partial<HealthInput>): HealthIssue[] {
-  return computeHealth({ pages: [], links: [], relations: [], unresolved: [], ambiguous: [], hot: null, missingFrontmatter: [], now: NOW, ...input });
+  return computeHealth({
+    pages: [],
+    links: [],
+    relations: [],
+    unresolved: [],
+    ambiguous: [],
+    hot: null,
+    missingFrontmatter: [],
+    now: NOW,
+    ...input,
+  });
 }
 
 const only = (issues: HealthIssue[], check: HealthIssue['check']): HealthIssue[] => issues.filter((i) => i.check === check);
@@ -184,7 +194,10 @@ describe('computeHealth — frontmatter, fields, links', () => {
 
   it('flags related: on entity and source pages only', () => {
     const pages = [
-      makePage('entities/alpha', { type: 'entity', frontmatter: { name: 'a', description: 'd', type: 'entity', tags: ['t'], related: [] } }),
+      makePage('entities/alpha', {
+        type: 'entity',
+        frontmatter: { name: 'a', description: 'd', type: 'entity', tags: ['t'], related: [] },
+      }),
       makePage('meta/note', { frontmatter: { name: 'n', description: 'd', type: 'meta', tags: ['t'], related: ['[[alpha]]'] } }),
     ];
     expect(only(health({ pages }), 'related-deprecated').map((i) => i.page)).toEqual(['entities/alpha']);

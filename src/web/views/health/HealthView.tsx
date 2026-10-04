@@ -28,25 +28,25 @@ function Thresholds() {
       </h2>
       <ul>
         <li>
-          <strong>{HEALTH_CHECKS.stale.label}</strong>: status {STALE_STATUSES.join(', ')} and a frontmatter <code>updated</code> date more than{' '}
-          {STALE_DAYS} days old; archived pages (<code>index: false</code>) are exempt.
+          <strong>{HEALTH_CHECKS.stale.label}</strong>: status {STALE_STATUSES.join(', ')} and a frontmatter <code>updated</code> date more
+          than {STALE_DAYS} days old; archived pages (<code>index: false</code>) are exempt.
         </li>
         <li>
-          <strong>{HEALTH_CHECKS.oversized.label}</strong>: files over {formatNumber(OVERSIZED_BYTES / 1024)} KB ({formatNumber(OVERSIZED_BYTES)} B); navigation
-          pages are exempt.
+          <strong>{HEALTH_CHECKS.oversized.label}</strong>: files over {formatNumber(OVERSIZED_BYTES / 1024)} KB (
+          {formatNumber(OVERSIZED_BYTES)} B); navigation pages are exempt.
         </li>
         <li>
-          <strong>{HEALTH_CHECKS['hot-budget'].label}</strong>: {formatNumber(HOT_BUDGET_BYTES)} B, the same threshold as the SessionStart hook that injects
-          hot.md; warning above 90%, error above 100%.
+          <strong>{HEALTH_CHECKS['hot-budget'].label}</strong>: {formatNumber(HOT_BUDGET_BYTES)} B, the same threshold as the SessionStart
+          hook that injects hot.md; warning above 90%, error above 100%.
         </li>
         <li>
-          <strong>{HEALTH_CHECKS.orphan.label}</strong>: no body link, <code>related:</code> entry or typed relation reaches the page except from navigation
-          pages ({KIND_DESCRIPTIONS.nav.replace(/^Indexes and caches: /, '')}). Navigation pages, folds (log rollups, reached through folds/_index by design)
-          and archived pages (<code>index: false</code>) are never flagged.
+          <strong>{HEALTH_CHECKS.orphan.label}</strong>: no body link, <code>related:</code> entry or typed relation reaches the page except
+          from navigation pages ({KIND_DESCRIPTIONS.nav.replace(/^Indexes and caches: /, '')}). Navigation pages, folds (log rollups,
+          reached through folds/_index by design) and archived pages (<code>index: false</code>) are never flagged.
         </li>
         <li>
-          <strong>{HEALTH_CHECKS['relation-asymmetric'].label}</strong>: a predicate with an inverse belongs on both pages; {ONE_WAY.join(', ')} have no
-          inverse, so one side is enough.
+          <strong>{HEALTH_CHECKS['relation-asymmetric'].label}</strong>: a predicate with an inverse belongs on both pages;{' '}
+          {ONE_WAY.join(', ')} have no inverse, so one side is enough.
         </li>
       </ul>
     </section>

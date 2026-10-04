@@ -52,7 +52,9 @@ export function runRecall(vault: string, query: string, top: number): Promise<Re
     child.on('close', (code) => {
       clearTimeout(timer);
       if (code === 10) {
-        reject(new RecallError('not-provisioned', 'The retrieval index is not built (retrieve.py exit 10). Run the index refresh in the vault.'));
+        reject(
+          new RecallError('not-provisioned', 'The retrieval index is not built (retrieve.py exit 10). Run the index refresh in the vault.'),
+        );
         return;
       }
       if (code !== 0) {

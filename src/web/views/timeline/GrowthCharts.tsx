@@ -75,10 +75,23 @@ export function PagesGrowthChart({ data, palette, day }: GrowthChartsProps) {
         Plot.axisY({ ticks: 5, tickSize: 0, tickPadding: 8, label: null }),
         Plot.axisX({ ticks, tickFormat: monthTickLabel, tickSize: 0, tickPadding: 8, label: null }),
         Plot.areaY(long, { x: 'time', y: 'count', fill: 'group', order, curve: 'step-after', fillOpacity: 0.18 }),
-        Plot.lineY(long, Plot.stackY2({ x: 'time', y: 'count', z: 'group', stroke: 'group', order, curve: 'step-after', strokeWidth: 1.5 })),
+        Plot.lineY(
+          long,
+          Plot.stackY2({ x: 'time', y: 'count', z: 'group', stroke: 'group', order, curve: 'step-after', strokeWidth: 1.5 }),
+        ),
         Plot.ruleY([0], { stroke: palette.baseline }),
         marker ? Plot.ruleX([marker], { stroke: palette.ink, strokeWidth: 1 }) : null,
-        last ? Plot.text([last], { x: 'time', y: 'total', text: (p: GrowthPoint) => formatNumber(p.total), dx: 6, textAnchor: 'start', fill: palette.ink2, fontWeight: 600 }) : null,
+        last
+          ? Plot.text([last], {
+              x: 'time',
+              y: 'total',
+              text: (p: GrowthPoint) => formatNumber(p.total),
+              dx: 6,
+              textAnchor: 'start',
+              fill: palette.ink2,
+              fontWeight: 600,
+            })
+          : null,
         Plot.ruleX(data.growth, Plot.pointerX({ x: 'time', stroke: palette.ink3, strokeWidth: 1 })),
         Plot.tip(data.growth, Plot.pointerX({ x: 'time', y: 'total', title: growthTip, lineWidth: 24 })),
       ],
@@ -126,7 +139,17 @@ export function LinksGrowthChart({ data, palette, day }: GrowthChartsProps) {
         Plot.lineY(data.links, { x: 'time', y: 'count', stroke: palette.accent, strokeWidth: 2, curve: 'step-after' }),
         Plot.ruleY([0], { stroke: palette.baseline }),
         marker ? Plot.ruleX([marker], { stroke: palette.ink, strokeWidth: 1 }) : null,
-        last ? Plot.text([last], { x: 'time', y: 'count', text: (p: LinkPoint) => formatNumber(p.count), dx: 6, textAnchor: 'start', fill: palette.ink2, fontWeight: 600 }) : null,
+        last
+          ? Plot.text([last], {
+              x: 'time',
+              y: 'count',
+              text: (p: LinkPoint) => formatNumber(p.count),
+              dx: 6,
+              textAnchor: 'start',
+              fill: palette.ink2,
+              fontWeight: 600,
+            })
+          : null,
         Plot.ruleX(data.links, Plot.pointerX({ x: 'time', stroke: palette.ink3, strokeWidth: 1 })),
         Plot.tip(data.links, Plot.pointerX({ x: 'time', y: 'count', title: linksTip })),
       ],

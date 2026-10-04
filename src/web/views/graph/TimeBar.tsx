@@ -136,7 +136,12 @@ export function TimeBar({ visibleNodes, visibleEdges }: { visibleNodes: number; 
       <div className="timebar-counts">
         {formatNumber(visibleNodes)} pages · {formatNumber(visibleEdges)} edges
       </div>
-      <select className="select timebar-speed" value={duration} onChange={(e) => setDuration(Number(e.target.value))} aria-label="Replay duration">
+      <select
+        className="select timebar-speed"
+        value={duration}
+        onChange={(e) => setDuration(Number(e.target.value))}
+        aria-label="Replay duration"
+      >
         {SPEEDS.map((s) => (
           <option key={s.ms} value={s.ms}>
             {s.label}

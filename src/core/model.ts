@@ -224,7 +224,11 @@ export async function buildVaultModel(root: string, options: BuildOptions = {}):
     ? await Promise.all([
         readHistory(wikiRoot),
         // Same rule as the current-state pass: wikilinks inside inline code are not links.
-        readLinkHistory(wikiRoot, (line) => extractWikilinks(stripCode(line)).map((ref) => ref.target).filter(Boolean)),
+        readLinkHistory(wikiRoot, (line) =>
+          extractWikilinks(stripCode(line))
+            .map((ref) => ref.target)
+            .filter(Boolean),
+        ),
       ])
     : [null, null];
   const { commits, ghosts } = foldHistory(history ?? [], new Set(ids), pages);
@@ -392,8 +396,7 @@ export function foldHistory(raw: RawCommit[], current: Set<string>, pages: Page[
     }
   }
 
-  const dateOf = (index: number | undefined): string | null =>
-    index === undefined ? null : (commits[index]?.date ?? null);
+  const dateOf = (index: number | undefined): string | null => (index === undefined ? null : (commits[index]?.date ?? null));
 
   for (const page of pages) {
     const list = [...new Set([...(earlier.get(page.id) ?? []), ...(live.get(page.id)?.commits ?? [])])].sort((a, b) => a - b);

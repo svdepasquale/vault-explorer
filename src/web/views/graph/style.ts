@@ -44,7 +44,8 @@ export function baseColor(page: Page, ctx: StyleContext): string {
 
 export function edgeVisibility(attrs: EdgeAttrs, settings: GraphSettings, time: number | null): { typed: boolean; body: boolean } {
   if (time !== null && attrs.since !== null && attrs.since > time) return { typed: false, body: false };
-  const typed = settings.showRelations && attrs.relations.length > 0 && (!settings.predicate || attrs.predicates.includes(settings.predicate));
+  const typed =
+    settings.showRelations && attrs.relations.length > 0 && (!settings.predicate || attrs.predicates.includes(settings.predicate));
   const body = settings.showBodyLinks && !settings.predicate && (attrs.body > 0 || attrs.related);
   return { typed, body };
 }
@@ -147,8 +148,18 @@ export function nodeLook(page: Page, ctx: StyleContext): NodeLook {
 }
 
 /** Color of a visible edge given the current focus / lens. */
-export function edgeColor(attrs: EdgeAttrs, typed: boolean, source: string, target: string, ctx: StyleContext): { color: string; dimmed: boolean } {
-  let color = typed ? (ctx.settings.showAsymmetric && attrs.asymmetric ? ctx.palette.status.warning : ctx.palette.typedEdge) : ctx.palette.bodyEdge;
+export function edgeColor(
+  attrs: EdgeAttrs,
+  typed: boolean,
+  source: string,
+  target: string,
+  ctx: StyleContext,
+): { color: string; dimmed: boolean } {
+  let color = typed
+    ? ctx.settings.showAsymmetric && attrs.asymmetric
+      ? ctx.palette.status.warning
+      : ctx.palette.typedEdge
+    : ctx.palette.bodyEdge;
   let dimmed = false;
   if (ctx.highlight) {
     if (ctx.highlight.ranks[source] === undefined || ctx.highlight.ranks[target] === undefined) dimmed = true;

@@ -97,7 +97,8 @@ export function QueryBar({ vault, enabled }: { vault: string; enabled: boolean }
         </button>
       </div>
       <p className="recall-form-hint">
-        English queries recall better: the vault is written in English. Claude’s own protocol retrieves the top {CLAUDE_TOP}; Enter runs the query.
+        English queries recall better: the vault is written in English. Claude’s own protocol retrieves the top {CLAUDE_TOP}; Enter runs the
+        query.
       </p>
       {history.length > 0 && (
         <div className="recall-history" role="group" aria-label="Recent queries">

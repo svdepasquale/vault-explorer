@@ -187,12 +187,19 @@ export type Severity = 'error' | 'warning' | 'info';
 export const HEALTH_CHECKS = {
   'frontmatter-missing': { label: 'No frontmatter', description: 'The page has no YAML frontmatter block.' },
   'frontmatter-yaml': { label: 'Invalid YAML', description: 'The frontmatter is not valid YAML; a lenient line parse was used instead.' },
-  'frontmatter-comment-cut': { label: 'Value cut by #', description: 'An unquoted " #" starts a YAML comment, so the rest of the value is dropped; quote the value.' },
+  'frontmatter-comment-cut': {
+    label: 'Value cut by #',
+    description: 'An unquoted " #" starts a YAML comment, so the rest of the value is dropped; quote the value.',
+  },
   'field-missing': { label: 'Missing fields', description: 'One of the universal fields name, description, type, tags is missing.' },
   'link-unresolved': { label: 'Dead wikilink', description: 'A body wikilink points to no page.' },
   'link-ambiguous': { label: 'Ambiguous wikilink', description: 'A bare wikilink matches several pages; the closest one was picked.' },
   'relation-unresolved': { label: 'Dead relation', description: 'A typed relation points to no page.' },
-  'relation-asymmetric': { label: 'One-sided relation', description: 'A predicate with an inverse is declared on one entity/source page only; the schema wants both (meta, profile, runbook and navigation pages use related: instead).' },
+  'relation-asymmetric': {
+    label: 'One-sided relation',
+    description:
+      'A predicate with an inverse is declared on one entity/source page only; the schema wants both (meta, profile, runbook and navigation pages use related: instead).',
+  },
   'relation-unknown-predicate': { label: 'Unknown predicate', description: 'The relations block uses a predicate outside the schema.' },
   'related-deprecated': { label: 'related: on entity/source', description: 'Entity and source pages use typed relations:, not related:.' },
   orphan: { label: 'Orphan', description: 'No page links here except navigation pages.' },

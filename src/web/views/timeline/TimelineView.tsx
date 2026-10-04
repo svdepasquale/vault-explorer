@@ -64,7 +64,13 @@ function TimeTravel({ data, day, onDay }: { data: TimelineData; day: string | nu
           else if (value >= startKey && value <= data.todayKey) onDay(value);
         }}
       />
-      <button type="button" className="btn btn-primary btn-small" disabled={!day} onClick={travel} title={day ? undefined : 'Pick a day in the calendar or in the date field'}>
+      <button
+        type="button"
+        className="btn btn-primary btn-small"
+        disabled={!day}
+        onClick={travel}
+        title={day ? undefined : 'Pick a day in the calendar or in the date field'}
+      >
         {day ? `Show graph as of ${formatDay(day)}` : 'Show graph as of…'}
       </button>
       {timeCursor !== null && (
@@ -90,7 +96,10 @@ export default function TimelineView() {
     return (
       <div className="app-empty">
         <p className="app-empty-title">No history to show</p>
-        <p className="app-empty-detail">The timeline is built from git commits that touch wiki/, and this vault has none{derived.model.vault.capabilities.git ? '' : ' (it is not a git repository)'}.</p>
+        <p className="app-empty-detail">
+          The timeline is built from git commits that touch wiki/, and this vault has none
+          {derived.model.vault.capabilities.git ? '' : ' (it is not a git repository)'}.
+        </p>
       </div>
     );
   }
@@ -143,7 +152,9 @@ export default function TimelineView() {
                 <h2 className="timeline-card-title" id="timeline-growth-title">
                   Growth
                 </h2>
-                <p className="timeline-card-sub">How many pages and links the vault held, day by day. Two charts on one time axis, each with its own scale.</p>
+                <p className="timeline-card-sub">
+                  How many pages and links the vault held, day by day. Two charts on one time axis, each with its own scale.
+                </p>
               </div>
             </header>
             <PagesGrowthChart data={data} palette={palette} day={day} />
@@ -157,8 +168,8 @@ export default function TimelineView() {
                   Page lifelines
                 </h2>
                 <p className="timeline-card-sub">
-                  One row per page, oldest first: from its first commit to its last change. Deleted pages are hollow and end at their deletion.
-                  Click a row to open the page.
+                  One row per page, oldest first: from its first commit to its last change. Deleted pages are hollow and end at their
+                  deletion. Click a row to open the page.
                 </p>
               </div>
             </header>

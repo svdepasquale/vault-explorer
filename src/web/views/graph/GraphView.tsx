@@ -98,12 +98,7 @@ export default function GraphView() {
           onReady={onReady}
         />
       )}
-      <GraphControls
-        visibleNodes={visible.size}
-        visibleEdges={visibleEdges}
-        onFit={() => cameraRef.current?.fit()}
-        onRelayout={relayout}
-      />
+      <GraphControls visibleNodes={visible.size} visibleEdges={visibleEdges} onFit={() => cameraRef.current?.fit()} onRelayout={relayout} />
       <GraphLegend visible={visible} />
       {highlight && (
         <div className="graph-banner" role="status">

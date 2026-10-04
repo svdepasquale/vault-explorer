@@ -23,7 +23,13 @@ export function PlotFigure({ options, onSelect, className }: PlotFigureProps) {
     if (!host) return;
     const figure = Plot.plot({
       ...options,
-      style: { background: 'transparent', color: 'var(--ink-2)', fontFamily: 'var(--font-sans)', fontSize: '12px', ...(typeof options.style === 'object' ? options.style : {}) },
+      style: {
+        background: 'transparent',
+        color: 'var(--ink-2)',
+        fontFamily: 'var(--font-sans)',
+        fontSize: '12px',
+        ...(typeof options.style === 'object' ? options.style : {}),
+      },
     });
     const onClick = (): void => {
       const value = (figure as unknown as { value?: unknown }).value;

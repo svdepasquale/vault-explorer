@@ -1,10 +1,4 @@
-import type {
-  ApiError,
-  PageContentResponse,
-  RecallResponse,
-  StatusResponse,
-  VaultModel,
-} from '../../shared/model.ts';
+import type { ApiError, PageContentResponse, RecallResponse, StatusResponse, VaultModel } from '../../shared/model.ts';
 
 export class ApiFailure extends Error {
   code: string | undefined;

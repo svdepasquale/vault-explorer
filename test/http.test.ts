@@ -49,7 +49,14 @@ async function write(path: string, text: string): Promise<void> {
 function send(path: string, init: { method?: string; headers?: Record<string, string>; body?: string } = {}): Promise<Reply> {
   return new Promise((resolve, reject) => {
     const req = request(
-      { host: '127.0.0.1', port, path, method: init.method ?? 'GET', headers: { host: `127.0.0.1:${port}`, ...init.headers }, agent: false },
+      {
+        host: '127.0.0.1',
+        port,
+        path,
+        method: init.method ?? 'GET',
+        headers: { host: `127.0.0.1:${port}`, ...init.headers },
+        agent: false,
+      },
       (res) => {
         let body = '';
         res.setEncoding('utf8');
@@ -137,7 +144,11 @@ describe('Host header guard (DNS rebinding)', () => {
 
 describe('POST guards', () => {
   it('accepts a same-origin JSON request (positive control)', async () => {
-    const reply = await post('/api/vault', { origin: sameOrigin(), 'content-type': 'application/json; charset=utf-8' }, '{"path":"/somewhere"}');
+    const reply = await post(
+      '/api/vault',
+      { origin: sameOrigin(), 'content-type': 'application/json; charset=utf-8' },
+      '{"path":"/somewhere"}',
+    );
     expect(reply.status).toBe(200);
     expect(selected).toEqual(['/somewhere']);
   });
@@ -173,7 +184,11 @@ describe('POST guards', () => {
   });
 
   it('stops a text/plain body that names application/json when the browser sends an Origin', async () => {
-    const reply = await post('/api/vault', { origin: 'https://evil.example', 'content-type': 'text/plain; charset=application/json' }, '{"path":"/x"}');
+    const reply = await post(
+      '/api/vault',
+      { origin: 'https://evil.example', 'content-type': 'text/plain; charset=application/json' },
+      '{"path":"/x"}',
+    );
     expect(reply.status).toBe(403);
     expect(selected).toEqual([]);
   });

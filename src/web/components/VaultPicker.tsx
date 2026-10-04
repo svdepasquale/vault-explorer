@@ -37,7 +37,12 @@ export function VaultPicker({ inline = false }: { inline?: boolean }) {
   const isMac = status?.platform === 'darwin';
 
   const body = (
-    <div className={`picker${inline ? ' picker-inline' : ''}`} {...(inline ? { role: 'region', 'aria-labelledby': 'picker-title' } : { role: 'dialog', 'aria-modal': true, 'aria-labelledby': 'picker-title' })}>
+    <div
+      className={`picker${inline ? ' picker-inline' : ''}`}
+      {...(inline
+        ? { role: 'region', 'aria-labelledby': 'picker-title' }
+        : { role: 'dialog', 'aria-modal': true, 'aria-labelledby': 'picker-title' })}
+    >
       <h2 id="picker-title">{inline ? 'Open a vault' : 'Switch vault'}</h2>
       <p className="picker-hint">
         Pick the root of a knowledge-vault repository — the folder that contains <code>wiki/</code>. Nothing is written to it.
@@ -47,7 +52,12 @@ export function VaultPicker({ inline = false }: { inline?: boolean }) {
         <ul className="picker-recent">
           {recent.map((p) => (
             <li key={p}>
-              <button type="button" className={`picker-recent-item${p === status?.vault ? ' current' : ''}`} disabled={busy} onClick={() => void open(p)}>
+              <button
+                type="button"
+                className={`picker-recent-item${p === status?.vault ? ' current' : ''}`}
+                disabled={busy}
+                onClick={() => void open(p)}
+              >
                 <span className="picker-recent-name">{p.split('/').filter(Boolean).pop()}</span>
                 <span className="picker-recent-path">{p}</span>
               </button>

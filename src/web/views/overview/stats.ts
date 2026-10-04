@@ -1,12 +1,4 @@
-import {
-  isOneSided,
-  OVERSIZED_BYTES,
-  PAGE_KINDS,
-  PREDICATES,
-  STALE_STATUSES,
-  type Page,
-  type PageKind,
-} from '../../../shared/model.ts';
+import { isOneSided, OVERSIZED_BYTES, PAGE_KINDS, PREDICATES, STALE_STATUSES, type Page, type PageKind } from '../../../shared/model.ts';
 import type { Derived } from '../../app/derived.ts';
 
 export interface KindCount {

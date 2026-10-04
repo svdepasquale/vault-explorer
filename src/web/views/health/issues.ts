@@ -1,6 +1,14 @@
 // Pure helpers for the Health view: grouping, filtering, the checklist handed
 // to Claude and the per-predicate symmetry of typed relations.
-import { isOneSided, HEALTH_CHECKS, PREDICATES, type HealthCheck, type HealthIssue, type Relation, type Severity } from '../../../shared/model.ts';
+import {
+  isOneSided,
+  HEALTH_CHECKS,
+  PREDICATES,
+  type HealthCheck,
+  type HealthIssue,
+  type Relation,
+  type Severity,
+} from '../../../shared/model.ts';
 
 export const SEVERITIES: readonly Severity[] = ['error', 'warning', 'info'];
 const SEVERITY_RANK: Record<Severity, number> = { error: 0, warning: 1, info: 2 };
@@ -68,7 +76,9 @@ export function groupByCheck(issues: readonly HealthIssue[]): CheckGroup[] {
       issues: list,
       pages: distinctPages(list),
     }))
-    .sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] || order(a.check) - order(b.check) || a.check.localeCompare(b.check));
+    .sort(
+      (a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] || order(a.check) - order(b.check) || a.check.localeCompare(b.check),
+    );
 }
 
 export function countPages(issues: readonly HealthIssue[]): number {

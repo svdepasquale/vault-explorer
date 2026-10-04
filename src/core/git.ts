@@ -120,7 +120,11 @@ export async function readHistory(dir: string): Promise<RawCommit[] | null> {
 export function diffPath(raw: string): string {
   const path = raw.replace(/\t.*$/, '');
   if (!path.startsWith('"') || !path.endsWith('"')) return path;
-  return path.slice(1, -1).replace(/\\(["\\])/g, '$1').replace(/\\t/g, '\t').replace(/\\n/g, '\n');
+  return path
+    .slice(1, -1)
+    .replace(/\\(["\\])/g, '$1')
+    .replace(/\\t/g, '\t')
+    .replace(/\\n/g, '\n');
 }
 
 /**
@@ -132,10 +136,7 @@ export function diffPath(raw: string): string {
  * lineage), and a page deleted then re-created at the same path keeps its earlier dates.
  * Known limit: under `--unified=0` a line inside a fenced block cannot be told apart.
  */
-export async function readLinkHistory(
-  dir: string,
-  extract: (line: string) => string[],
-): Promise<Map<string, Map<string, string>> | null> {
+export async function readLinkHistory(dir: string, extract: (line: string) => string[]): Promise<Map<string, Map<string, string>> | null> {
   let out: string;
   try {
     out = await git(dir, [

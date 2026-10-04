@@ -95,7 +95,15 @@ export function Lifelines({ data, palette, day }: LifelinesProps) {
         Plot.barX(rows, Plot.pointerY({ ...fullRow, fill: palette.ink, fillOpacity: 0.05, maxRadius: Infinity })),
         marker ? Plot.ruleX([marker], { stroke: palette.ink, strokeWidth: 1 }) : null,
         // Negative insets give same-day lifelines a visible 3px sliver without moving their dates.
-        Plot.barX(live, { y: 'id', x1: 'born', x2: 'end', fill: (d: Lifeline) => groupColor(palette, d.group), insetLeft: -1.5, insetRight: -1.5, r: 2 }),
+        Plot.barX(live, {
+          y: 'id',
+          x1: 'born',
+          x2: 'end',
+          fill: (d: Lifeline) => groupColor(palette, d.group),
+          insetLeft: -1.5,
+          insetRight: -1.5,
+          r: 2,
+        }),
         Plot.barX(gone, {
           y: 'id',
           x1: 'born',
@@ -182,7 +190,19 @@ export function Lifelines({ data, palette, day }: LifelinesProps) {
   );
 }
 
-function LifelineTooltip({ hover, data, palette, width, gutter }: { hover: Hover; data: TimelineData; palette: Palette; width: number; gutter: number }) {
+function LifelineTooltip({
+  hover,
+  data,
+  palette,
+  width,
+  gutter,
+}: {
+  hover: Hover;
+  data: TimelineData;
+  palette: Palette;
+  width: number;
+  gutter: number;
+}) {
   const { row, index, below } = hover;
   const span = Math.max(1, data.end - data.start);
   const x = gutter + ((row.end - data.start) / span) * (width - gutter - RIGHT);

@@ -10,7 +10,19 @@ import type { OverviewStats } from './stats.ts';
 /** Same thresholds as the hot-budget health check: warning above 90%, error above 100%. */
 const HOT_WARNING_SHARE = 0.9;
 
-function Tile({ label, value, unit, children, className }: { label: ReactNode; value: ReactNode; unit?: string; children?: ReactNode; className?: string }) {
+function Tile({
+  label,
+  value,
+  unit,
+  children,
+  className,
+}: {
+  label: ReactNode;
+  value: ReactNode;
+  unit?: string;
+  children?: ReactNode;
+  className?: string;
+}) {
   return (
     <div className={`card overview-kpi${className ? ` ${className}` : ''}`}>
       <div className="overview-kpi-label">{label}</div>
@@ -22,7 +34,6 @@ function Tile({ label, value, unit, children, className }: { label: ReactNode; v
     </div>
   );
 }
-
 
 function HotTile({ hot }: { hot: HotSummary | null }) {
   if (!hot) {
@@ -46,7 +57,11 @@ function HotTile({ hot }: { hot: HotSummary | null }) {
         aria-valuetext={`${formatNumber(hot.bytes)} of ${formatNumber(hot.budget)} bytes`}
       >
         <span className="overview-meter-fill" style={{ width: `${Math.min(100, share * 100)}%` }} />
-        <span className="overview-meter-tick" style={{ left: `${HOT_WARNING_SHARE * 100}%` }} title="Warning threshold: 90% of the budget" />
+        <span
+          className="overview-meter-tick"
+          style={{ left: `${HOT_WARNING_SHARE * 100}%` }}
+          title="Warning threshold: 90% of the budget"
+        />
       </div>
       <p>
         {formatNumber(hot.bytes)} of {formatNumber(hot.budget)} B

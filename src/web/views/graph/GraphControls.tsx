@@ -154,7 +154,11 @@ export function GraphControls({
               Body links
             </label>
             <label className="check">
-              <input type="checkbox" checked={settings.showAsymmetric} onChange={(e) => updateGraph({ showAsymmetric: e.target.checked })} />
+              <input
+                type="checkbox"
+                checked={settings.showAsymmetric}
+                onChange={(e) => updateGraph({ showAsymmetric: e.target.checked })}
+              />
               Mark one-sided relations ({asymmetric})
             </label>
             <select

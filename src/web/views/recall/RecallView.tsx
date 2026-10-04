@@ -88,8 +88,8 @@ function Intro() {
     <div className="recall-intro">
       <p className="recall-intro-title">Ask what Claude would recall</p>
       <p>
-        Type a question the way you would ask Claude. The vault’s retrieval returns the chunks Claude would read for it, best first, with the
-        scores that ranked them. Click a page to open it beside the list; <em>Show on graph</em> lights the hits up on the link graph.
+        Type a question the way you would ask Claude. The vault’s retrieval returns the chunks Claude would read for it, best first, with
+        the scores that ranked them. Click a page to open it beside the list; <em>Show on graph</em> lights the hits up on the link graph.
       </p>
     </div>
   );
@@ -143,8 +143,8 @@ export default function RecallView() {
               <div>
                 <p className="recall-callout-title">Recall is not available for this vault</p>
                 <p>
-                  It runs the vault’s own <code>scripts/retrieve.py</code>, and this vault has none, so there is nothing to run. The other views
-                  work as usual.
+                  It runs the vault’s own <code>scripts/retrieve.py</code>, and this vault has none, so there is nothing to run. The other
+                  views work as usual.
                 </p>
               </div>
             </div>

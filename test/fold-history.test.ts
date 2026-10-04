@@ -99,7 +99,10 @@ describe('foldHistory', () => {
 
   it('reads a rename across the markdown boundary as an addition or a deletion', () => {
     const { commits, ghosts, page } = fold(
-      [commit(1, A('notes.txt'), A('entities/alpha.md')), commit(2, R('notes.txt', 'meta/notes.md'), R('entities/alpha.md', 'entities/alpha.txt'))],
+      [
+        commit(1, A('notes.txt'), A('entities/alpha.md')),
+        commit(2, R('notes.txt', 'meta/notes.md'), R('entities/alpha.md', 'entities/alpha.txt')),
+      ],
       ['meta/notes'],
     );
     expect(commits[1]?.changes).toEqual([

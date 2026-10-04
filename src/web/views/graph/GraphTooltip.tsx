@@ -29,7 +29,8 @@ export function GraphTooltip({ tooltip, derived, graph }: { tooltip: TooltipStat
         <div className="graph-tooltip-title">{page.title}</div>
         {page.description && <div className="graph-tooltip-desc">{page.description}</div>}
         <div className="graph-tooltip-meta">
-          {plural(inbound, 'page')} link here · born {born ? formatDate(new Date(born).toISOString()) : '—'} · updated {daysAgo(derived.ageDays(page))}
+          {plural(inbound, 'page')} link here · born {born ? formatDate(new Date(born).toISOString()) : '—'} · updated{' '}
+          {daysAgo(derived.ageDays(page))}
         </div>
       </div>
     );
@@ -53,7 +54,9 @@ export function GraphTooltip({ tooltip, derived, graph }: { tooltip: TooltipStat
             <span className="mono">{shortLabel(target)}</span>
           </div>
         )}
-        {attrs.since !== null && <div className="graph-tooltip-meta">connected since {formatDate(new Date(attrs.since).toISOString())}</div>}
+        {attrs.since !== null && (
+          <div className="graph-tooltip-meta">connected since {formatDate(new Date(attrs.since).toISOString())}</div>
+        )}
       </div>
     );
   }

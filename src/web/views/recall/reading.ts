@@ -23,7 +23,8 @@ export interface StrategyInfo {
 
 // rerank.py's rerank_source values for the no-op paths.
 const NOOP_REASONS: Record<string, string> = {
-  'noop-no-backend': 'no embedding backend was available (the local llama-embedding binary or its model files are missing, or the configured HTTP backend is down)',
+  'noop-no-backend':
+    'no embedding backend was available (the local llama-embedding binary or its model files are missing, or the configured HTTP backend is down)',
   'noop-no-model': 'the embedding models are not available on the backend',
   'noop-embed-error': 'embedding failed while answering this query',
 };
@@ -41,7 +42,14 @@ export function readStrategy(raw: string | null, candidates: readonly RecallCand
   const outsideUnit = scores.some((s) => s < 0 || s > 1);
   if (raw?.includes('noop')) {
     const code = /noop[-a-z]*/.exec(raw)?.[0] ?? 'noop';
-    return { kind: 'degraded', label: 'BM25 only', models: [], reason: NOOP_REASONS[code] ?? 'the rerank stage did not run', scoreMode: 'none', raw };
+    return {
+      kind: 'degraded',
+      label: 'BM25 only',
+      models: [],
+      reason: NOOP_REASONS[code] ?? 'the rerank stage did not run',
+      scoreMode: 'none',
+      raw,
+    };
   }
   const cosine = raw ? /rerank:cosine:(.+)$/.exec(raw) : null;
   if (cosine?.[1]) {

@@ -3,8 +3,7 @@ import { parseWikilinkInner } from '../../../shared/wikilink.ts';
 
 type Resolve = (raw: string) => string | null;
 
-const escapeHtml = (s: string): string =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const escapeHtml = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /**
  * Inline markdown for one-line items (hot.md bullets), with the same wikilink
@@ -35,7 +34,9 @@ export function createInlineRenderer(resolve: Resolve): (text: string) => string
 
   md.renderer.rules['wikilink'] = (tokens, idx) => {
     const meta = tokens[idx]?.meta as { target: string; anchor: string | null; alias: string | null; id: string | null };
-    const text = escapeHtml(meta.alias ?? (meta.anchor && !meta.target ? `#${meta.anchor}` : meta.target + (meta.anchor ? ` › ${meta.anchor}` : '')));
+    const text = escapeHtml(
+      meta.alias ?? (meta.anchor && !meta.target ? `#${meta.anchor}` : meta.target + (meta.anchor ? ` › ${meta.anchor}` : '')),
+    );
     if (!meta.target) return `<span class="wikilink anchor">${text}</span>`;
     if (!meta.id) return `<span class="wikilink unresolved" title="No page named ${escapeHtml(meta.target)}">${text}</span>`;
     return `<a class="wikilink" href="#" data-page="${escapeHtml(meta.id)}" title="${escapeHtml(meta.id)}">${text}</a>`;

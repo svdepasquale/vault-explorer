@@ -37,7 +37,17 @@ describe('assertVault and listMarkdown', () => {
     root = await makeTempDir('list');
     const tree = join(root, 'tree');
     for (const dir of ['.obsidian', 'node_modules/pkg', 'sub/deeper']) await mkdir(join(tree, dir), { recursive: true });
-    for (const file of ['a.md', 'b.md', 'c-upper.MD', 'notes.txt', '.hidden.md', '.obsidian/x.md', 'node_modules/pkg/y.md', 'sub/c.md', 'sub/deeper/d.md']) {
+    for (const file of [
+      'a.md',
+      'b.md',
+      'c-upper.MD',
+      'notes.txt',
+      '.hidden.md',
+      '.obsidian/x.md',
+      'node_modules/pkg/y.md',
+      'sub/c.md',
+      'sub/deeper/d.md',
+    ]) {
       await writeFile(join(tree, file), '# page\n');
     }
     await symlink('a.md', join(tree, 'link.md'));

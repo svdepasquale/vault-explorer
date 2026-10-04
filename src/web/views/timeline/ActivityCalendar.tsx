@@ -83,7 +83,10 @@ export function ActivityCalendar({ data, commits, palette, day, onDay }: Activit
         Plot.axisY({ ticks: [0, 2, 4], tickFormat: (d: number) => WEEKDAYS[d] ?? '', tickSize: 0, tickPadding: 6, label: null }),
         Plot.cell(data.days, { x: 'week', y: 'dow', fill, inset: 1, r: 3 }),
         selected ? Plot.cell([selected], { x: 'week', y: 'dow', fill: 'none', stroke: palette.ink, strokeWidth: 2, inset: 0, r: 4 }) : null,
-        Plot.cell(data.days, Plot.pointer({ x: 'week', y: 'dow', fill: 'none', stroke: palette.ink2, strokeWidth: 1.5, inset: 0.75, r: 3.5 })),
+        Plot.cell(
+          data.days,
+          Plot.pointer({ x: 'week', y: 'dow', fill: 'none', stroke: palette.ink2, strokeWidth: 1.5, inset: 0.75, r: 3.5 }),
+        ),
         Plot.tip(
           data.days,
           Plot.pointer({ x: 'week', y: 'dow', title: (d: DayCell) => tipText(d, commits), lineWidth: 30, textOverflow: 'ellipsis-end' }),

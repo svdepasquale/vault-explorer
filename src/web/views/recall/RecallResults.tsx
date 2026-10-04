@@ -157,11 +157,7 @@ function ResultRow({ candidate, rank, ctx }: { candidate: RecallCandidate; rank:
         {rank}
       </span>
       <div className="recall-page-cell">
-        {candidate.pageId ? (
-          <PageLink id={candidate.pageId} />
-        ) : (
-          <span className="recall-path">{candidate.path || 'unknown page'}</span>
-        )}
+        {candidate.pageId ? <PageLink id={candidate.pageId} /> : <span className="recall-path">{candidate.path || 'unknown page'}</span>}
         {page && page.title !== page.stem && <span className="recall-page-title">{page.title}</span>}
         {candidate.chunkId && (
           <span className="recall-chunk" title="Chunk id: page address and chunk index">
@@ -290,7 +286,11 @@ export function RecallResults({ run, stale }: { run: RecallRun; stale: boolean }
             className="btn btn-small"
             onClick={showOnGraph}
             disabled={rankedIds.length === 0}
-            title={rankedIds.length ? `Light up these ${plural(rankedIds.length, 'page')} on the graph, numbered by their best chunk` : 'No hit is a page of this vault'}
+            title={
+              rankedIds.length
+                ? `Light up these ${plural(rankedIds.length, 'page')} on the graph, numbered by their best chunk`
+                : 'No hit is a page of this vault'
+            }
           >
             Show on graph
           </button>
@@ -312,7 +312,11 @@ export function RecallResults({ run, stale }: { run: RecallRun; stale: boolean }
             <span className="recall-colhead-rank">#</span>
             <span className="recall-colhead-page">Page · title · chunk</span>
             {hasScore && (
-              <ColumnHead label={rerankName(strategy)} tipKey={`head:score:${run.id}`} explain={rerankExplainer(strategy, ctx.scoreDomain)} />
+              <ColumnHead
+                label={rerankName(strategy)}
+                tipKey={`head:score:${run.id}`}
+                explain={rerankExplainer(strategy, ctx.scoreDomain)}
+              />
             )}
             <ColumnHead label="BM25" tipKey={`head:bm25:${run.id}`} explain={bm25Explainer(strategy, ctx.bm25Domain)} />
           </div>

@@ -96,7 +96,14 @@ function Details({ page, derived }: { page: Page; derived: Derived }) {
           <dt>Domain</dt>
           <dd>
             {page.domain ? (
-              <button type="button" className="btn-link" onClick={() => { updateGraph({ colorBy: 'emphasis', emphasis: { field: 'domain', value: page.domain } }); setView('graph'); }}>
+              <button
+                type="button"
+                className="btn-link"
+                onClick={() => {
+                  updateGraph({ colorBy: 'emphasis', emphasis: { field: 'domain', value: page.domain } });
+                  setView('graph');
+                }}
+              >
                 {page.domain}
               </button>
             ) : (
@@ -136,7 +143,10 @@ function Details({ page, derived }: { page: Page; derived: Derived }) {
               type="button"
               className="tag"
               title="Highlight this tag on the graph"
-              onClick={() => { updateGraph({ colorBy: 'emphasis', emphasis: { field: 'tag', value: t } }); setView('graph'); }}
+              onClick={() => {
+                updateGraph({ colorBy: 'emphasis', emphasis: { field: 'tag', value: t } });
+                setView('graph');
+              }}
             >
               #{t}
             </button>
@@ -217,7 +227,10 @@ function History({ page, derived }: { page: Page; derived: Derived }) {
           const url = commitUrl(remote, c.hash);
           return (
             <li key={c.hash}>
-              <span className={`change change-${change?.status ?? 'M'}`} title={{ A: 'added', M: 'modified', D: 'deleted', R: 'renamed' }[change?.status ?? 'M']}>
+              <span
+                className={`change change-${change?.status ?? 'M'}`}
+                title={{ A: 'added', M: 'modified', D: 'deleted', R: 'renamed' }[change?.status ?? 'M']}
+              >
                 {change?.status ?? 'M'}
               </span>
               <span className="history-date">{formatDate(c.date)}</span>
@@ -276,7 +289,13 @@ export function PagePanel({ id }: { id: string }) {
           <h2 className="panel-title">{page.title}</h2>
           {page.title !== shortLabel(page.id) && <div className="panel-stem mono">[[{shortLabel(page.id)}]]</div>}
         </div>
-        <button type="button" className="btn btn-ghost panel-close" onClick={() => select(null)} aria-label="Close page panel" title="Close (Esc)">
+        <button
+          type="button"
+          className="btn btn-ghost panel-close"
+          onClick={() => select(null)}
+          aria-label="Close page panel"
+          title="Close (Esc)"
+        >
           ×
         </button>
       </div>
@@ -307,7 +326,14 @@ export function PagePanel({ id }: { id: string }) {
 
       <div className="panel-tabs" role="tablist">
         {(['details', 'content', 'history'] as const).map((t) => (
-          <button key={t} type="button" role="tab" aria-selected={tab === t} className={`panel-tab${tab === t ? ' active' : ''}`} onClick={() => setTab(t)}>
+          <button
+            key={t}
+            type="button"
+            role="tab"
+            aria-selected={tab === t}
+            className={`panel-tab${tab === t ? ' active' : ''}`}
+            onClick={() => setTab(t)}
+          >
             {t === 'details' ? 'Details' : t === 'content' ? 'Content' : `History (${page.git.commits.length})`}
           </button>
         ))}

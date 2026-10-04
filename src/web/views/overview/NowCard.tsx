@@ -114,7 +114,11 @@ export function NowCard({ hot }: { hot: HotSummary | null }) {
               : 'This vault has no hot.md.'}
           </p>
         </div>
-        {hot && page && <PageLink id={hot.id} showKind={false}>Open hot.md</PageLink>}
+        {hot && page && (
+          <PageLink id={hot.id} showKind={false}>
+            Open hot.md
+          </PageLink>
+        )}
       </header>
       {hot && !primary && <p className="overview-empty">hot.md has no list items under its ## sections.</p>}
       {primary && render && (

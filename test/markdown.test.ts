@@ -15,9 +15,7 @@ describe('extractWikilinks', () => {
   });
 
   it('accepts the \\| escape used inside markdown tables', () => {
-    expect(extractWikilinks('| peer | [[alpha\\|Alpha]] |')).toEqual([
-      { target: 'alpha', anchor: null, alias: 'Alpha', embed: false },
-    ]);
+    expect(extractWikilinks('| peer | [[alpha\\|Alpha]] |')).toEqual([{ target: 'alpha', anchor: null, alias: 'Alpha', embed: false }]);
   });
 
   it('marks embeds', () => {

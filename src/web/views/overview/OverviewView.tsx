@@ -64,12 +64,15 @@ function PredicateTip({ row }: { row: PredicateRow }) {
           )}
           {stat.oneSided > 0 && (
             <div className="overview-tip-note">
-              {formatNumber(stat.missingOnTarget)} lack the inverse on the target, {formatNumber(stat.missingOnSource)} the forward name on the source
+              {formatNumber(stat.missingOnTarget)} lack the inverse on the target, {formatNumber(stat.missingOnSource)} the forward name on
+              the source
             </div>
           )}
         </>
       ) : (
-        <div className="overview-tip-note">{stat.known ? 'No inverse in the schema: one declaration is complete' : 'Unknown predicate: see the Health view'}</div>
+        <div className="overview-tip-note">
+          {stat.known ? 'No inverse in the schema: one declaration is complete' : 'Unknown predicate: see the Health view'}
+        </div>
       )}
     </TipBody>
   );
@@ -115,7 +118,8 @@ export default function OverviewView() {
           <p className="overview-meta">
             The vault at a glance
             {model.vault.branch ? ` · ${model.vault.branch}` : ''}
-            {model.vault.head ? ` @ ${model.vault.head}` : ''} · model built {formatDate(model.generatedAt)} in {formatNumber(model.buildMs)} ms
+            {model.vault.head ? ` @ ${model.vault.head}` : ''} · model built {formatDate(model.generatedAt)} in{' '}
+            {formatNumber(model.buildMs)} ms
           </p>
         </header>
 
@@ -150,31 +154,66 @@ export default function OverviewView() {
                   )}
                 />
               }
-              table={<BarTable rows={kindRows} labelHeader="Kind" valueHeader="Pages" columns={[{ header: 'Share', cell: (r) => share(r.value, pages) }]} />}
+              table={
+                <BarTable
+                  rows={kindRows}
+                  labelHeader="Kind"
+                  valueHeader="Pages"
+                  columns={[{ header: 'Share', cell: (r) => share(r.value, pages) }]}
+                />
+              }
             />
             <ChartCard
               title="Pages by domain"
               subtitle={stats.noDomain ? `${formatNumber(stats.noDomain)} of ${formatNumber(pages)} pages have no domain` : undefined}
               chart={
                 domainRows.length ? (
-                  <HBarChart rows={domainRows} fill={palette.accent} ariaLabel="Pages by domain" tooltip={pagesTip('domain')} onPick={(r) => emphasize('domain', r.key)} />
+                  <HBarChart
+                    rows={domainRows}
+                    fill={palette.accent}
+                    ariaLabel="Pages by domain"
+                    tooltip={pagesTip('domain')}
+                    onPick={(r) => emphasize('domain', r.key)}
+                  />
                 ) : (
                   <p className="overview-empty">No page sets a domain.</p>
                 )
               }
-              table={<BarTable rows={domainRows} labelHeader="Domain" valueHeader="Pages" onPick={(r) => emphasize('domain', r.key)} pickTitle={EMPHASIS_HINT} />}
+              table={
+                <BarTable
+                  rows={domainRows}
+                  labelHeader="Domain"
+                  valueHeader="Pages"
+                  onPick={(r) => emphasize('domain', r.key)}
+                  pickTitle={EMPHASIS_HINT}
+                />
+              }
             />
             <ChartCard
               title="Pages by status"
               subtitle={stats.noStatus ? `${formatNumber(stats.noStatus)} of ${formatNumber(pages)} pages have no status` : undefined}
               chart={
                 statusRows.length ? (
-                  <HBarChart rows={statusRows} fill={palette.accent} ariaLabel="Pages by status" tooltip={pagesTip('status')} onPick={(r) => emphasize('status', r.key)} />
+                  <HBarChart
+                    rows={statusRows}
+                    fill={palette.accent}
+                    ariaLabel="Pages by status"
+                    tooltip={pagesTip('status')}
+                    onPick={(r) => emphasize('status', r.key)}
+                  />
                 ) : (
                   <p className="overview-empty">No page sets a status.</p>
                 )
               }
-              table={<BarTable rows={statusRows} labelHeader="Status" valueHeader="Pages" onPick={(r) => emphasize('status', r.key)} pickTitle={EMPHASIS_HINT} />}
+              table={
+                <BarTable
+                  rows={statusRows}
+                  labelHeader="Status"
+                  valueHeader="Pages"
+                  onPick={(r) => emphasize('status', r.key)}
+                  pickTitle={EMPHASIS_HINT}
+                />
+              }
             />
           </div>
         </section>
@@ -189,12 +228,26 @@ export default function OverviewView() {
               subtitle={`Of ${formatNumber(stats.tagsDistinct)} distinct tags · ${formatNumber(stats.tagsOnce)} are used on one page only`}
               chart={
                 tagRows.length ? (
-                  <HBarChart rows={tagRows} fill={palette.accent} ariaLabel="Top tags by pages" tooltip={pagesTip('tag')} onPick={(r) => emphasize('tag', r.key)} />
+                  <HBarChart
+                    rows={tagRows}
+                    fill={palette.accent}
+                    ariaLabel="Top tags by pages"
+                    tooltip={pagesTip('tag')}
+                    onPick={(r) => emphasize('tag', r.key)}
+                  />
                 ) : (
                   <p className="overview-empty">No page has tags.</p>
                 )
               }
-              table={<BarTable rows={tagRows} labelHeader="Tag" valueHeader="Pages" onPick={(r) => emphasize('tag', r.key)} pickTitle={EMPHASIS_HINT} />}
+              table={
+                <BarTable
+                  rows={tagRows}
+                  labelHeader="Tag"
+                  valueHeader="Pages"
+                  onPick={(r) => emphasize('tag', r.key)}
+                  pickTitle={EMPHASIS_HINT}
+                />
+              }
             />
           </section>
           <section className="overview-section" aria-labelledby="overview-relations">
@@ -226,7 +279,9 @@ export default function OverviewView() {
                     fill={palette.typedEdge}
                     ariaLabel="Typed relations by predicate, one-sided share in the warning color"
                     tooltip={(row) => <PredicateTip row={row} />}
-                    onPick={(row) => { if (row.stat.known) showPredicate(row.stat); }}
+                    onPick={(row) => {
+                      if (row.stat.known) showPredicate(row.stat);
+                    }}
                   />
                 ) : (
                   <p className="overview-empty">No typed relations yet.</p>
@@ -241,7 +296,9 @@ export default function OverviewView() {
                     { header: 'Both pages', cell: (r) => (r.stat.hasInverse ? formatNumber(r.stat.twoSided) : '—') },
                     { header: 'One-sided', cell: (r) => (r.stat.hasInverse ? formatNumber(r.stat.oneSided) : '—') },
                   ]}
-                  onPick={(row) => { if (row.stat.known) showPredicate(row.stat); }}
+                  onPick={(row) => {
+                    if (row.stat.known) showPredicate(row.stat);
+                  }}
                   pickTitle="Show only this predicate on the graph"
                 />
               }

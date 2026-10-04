@@ -228,7 +228,19 @@ export function HBarChart<T extends BarDatum>({
 }
 
 /** Tooltip body: the value leads, the category follows. */
-export function TipBody({ value, unit, label, children, hint }: { value: number; unit: string; label: ReactNode; children?: ReactNode; hint?: string }) {
+export function TipBody({
+  value,
+  unit,
+  label,
+  children,
+  hint,
+}: {
+  value: number;
+  unit: string;
+  label: ReactNode;
+  children?: ReactNode;
+  hint?: string;
+}) {
   return (
     <>
       <div className="overview-tip-value">
@@ -333,7 +345,14 @@ export function ChartCard({
         </div>
         <div className="segmented overview-toggle" role="radiogroup" aria-label={`Show ${title.toLowerCase()} as`}>
           {(['chart', 'table'] as const).map((m) => (
-            <button key={m} type="button" role="radio" aria-checked={mode === m} className={mode === m ? 'active' : ''} onClick={() => setMode(m)}>
+            <button
+              key={m}
+              type="button"
+              role="radio"
+              aria-checked={mode === m}
+              className={mode === m ? 'active' : ''}
+              onClick={() => setMode(m)}
+            >
               {m === 'chart' ? 'Chart' : 'Table'}
             </button>
           ))}

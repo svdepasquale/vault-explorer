@@ -196,17 +196,36 @@ export function IssueList({
           Issues
         </h2>
         <div className="segmented" role="radiogroup" aria-label="Severity">
-          <button type="button" role="radio" aria-checked={severity === null} className={severity === null ? 'active' : ''} onClick={() => update({ severity: null })}>
-            All <span className="health-seg-count">{formatNumber(severityCounts.error + severityCounts.warning + severityCounts.info)}</span>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={severity === null}
+            className={severity === null ? 'active' : ''}
+            onClick={() => update({ severity: null })}
+          >
+            All{' '}
+            <span className="health-seg-count">{formatNumber(severityCounts.error + severityCounts.warning + severityCounts.info)}</span>
           </button>
           {SEVERITIES.map((s) => (
-            <button key={s} type="button" role="radio" aria-checked={severity === s} className={severity === s ? 'active' : ''} onClick={() => update({ severity: s })}>
+            <button
+              key={s}
+              type="button"
+              role="radio"
+              aria-checked={severity === s}
+              className={severity === s ? 'active' : ''}
+              onClick={() => update({ severity: s })}
+            >
               <SeverityBadge severity={s} />
               <span className="health-seg-count">{formatNumber(severityCounts[s])}</span>
             </button>
           ))}
         </div>
-        <select className="select health-check-select" aria-label="Check" value={check ?? ''} onChange={(e) => update({ check: (e.target.value || null) as HealthCheck | null })}>
+        <select
+          className="select health-check-select"
+          aria-label="Check"
+          value={check ?? ''}
+          onChange={(e) => update({ check: (e.target.value || null) as HealthCheck | null })}
+        >
           <option value="">All checks</option>
           {checkOptions.map((c) => (
             <option key={c} value={c}>

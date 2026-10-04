@@ -63,7 +63,9 @@ function readHistory(): HistoryEntry[] {
         if (typeof item !== 'object' || item === null) return [];
         const { query, top, at } = item as Record<string, unknown>;
         if (typeof query !== 'string' || !query.trim()) return [];
-        return [{ query: query.trim().slice(0, MAX_QUERY_CHARS), top: isTopK(top) ? top : DEFAULT_TOP, at: typeof at === 'number' ? at : 0 }];
+        return [
+          { query: query.trim().slice(0, MAX_QUERY_CHARS), top: isTopK(top) ? top : DEFAULT_TOP, at: typeof at === 'number' ? at : 0 },
+        ];
       })
       .slice(0, HISTORY_SIZE);
   } catch {

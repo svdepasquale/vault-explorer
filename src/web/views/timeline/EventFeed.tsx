@@ -112,7 +112,9 @@ export function EventFeed({ data, derived, day, onDay }: EventFeedProps) {
         <div>
           <h2 className="timeline-card-title">Events</h2>
           <p className="timeline-card-sub">
-            {filteredOut ? `${formatNumber(filtered.length)} of ${plural(commits.length, 'commit')}` : `${plural(commits.length, 'commit')}, newest first`}
+            {filteredOut
+              ? `${formatNumber(filtered.length)} of ${plural(commits.length, 'commit')}`
+              : `${plural(commits.length, 'commit')}, newest first`}
           </p>
         </div>
       </header>
@@ -143,7 +145,13 @@ export function EventFeed({ data, derived, day, onDay }: EventFeedProps) {
         <div className="timeline-feed-active">
           <span className="timeline-filter-chip">
             {formatDay(day)}
-            <button type="button" className="timeline-filter-clear" onClick={() => onDay(null)} aria-label="Clear the day filter" title="Clear the day filter">
+            <button
+              type="button"
+              className="timeline-filter-clear"
+              onClick={() => onDay(null)}
+              aria-label="Clear the day filter"
+              title="Clear the day filter"
+            >
               ×
             </button>
           </span>
@@ -151,7 +159,9 @@ export function EventFeed({ data, derived, day, onDay }: EventFeedProps) {
       )}
       <div className="timeline-feed-scroll">
         {shown.length === 0 ? (
-          <p className="timeline-empty">{day && !query && group === 'all' ? 'No commits on this day.' : 'No commits match these filters.'}</p>
+          <p className="timeline-empty">
+            {day && !query && group === 'all' ? 'No commits on this day.' : 'No commits match these filters.'}
+          </p>
         ) : (
           <ol className="timeline-events">
             {shown.map((i) => {

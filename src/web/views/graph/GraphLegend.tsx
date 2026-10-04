@@ -15,9 +15,7 @@ export function GraphLegend({ visible }: { visible: Set<string> }) {
   const pages = derived.model.pages;
 
   const toggleKind = (kind: PageKind): void => {
-    const hidden = settings.hiddenKinds.includes(kind)
-      ? settings.hiddenKinds.filter((k) => k !== kind)
-      : [...settings.hiddenKinds, kind];
+    const hidden = settings.hiddenKinds.includes(kind) ? settings.hiddenKinds.filter((k) => k !== kind) : [...settings.hiddenKinds, kind];
     updateGraph({ hiddenKinds: hidden });
   };
 
@@ -39,7 +37,10 @@ export function GraphLegend({ visible }: { visible: Set<string> }) {
   } else if (settings.colorBy === 'emphasis') {
     const { field, value } = settings.emphasis;
     const matching = pages.filter(
-      (p) => visible.has(p.id) && value && (field === 'domain' ? p.domain === value : field === 'status' ? p.status === value : p.tags.includes(value)),
+      (p) =>
+        visible.has(p.id) &&
+        value &&
+        (field === 'domain' ? p.domain === value : field === 'status' ? p.status === value : p.tags.includes(value)),
     ).length;
     rows = (
       <>
