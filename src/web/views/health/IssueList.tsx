@@ -50,13 +50,14 @@ function IssueGroup({
         <span className="health-group-desc">{info.description}</span>
       </header>
       <ul className="health-rows" style={{ gridTemplateColumns: columns.join(' ') }}>
-        {group.issues.map((issue, i) => {
+        {group.issues.map((issue) => {
           const page = issue.page;
           const current = page !== null && page === selected;
           const open = page !== null && exists(page) ? () => onSelect(page) : undefined;
           return (
+            // biome-ignore lint/a11y/useKeyWithClickEvents: whole-row click is a mouse shortcut; the page link inside is the keyboard path
             <li
-              key={`${i}:${page ?? ''}:${issue.other ?? ''}`}
+              key={`${issue.check}:${page ?? ''}:${issue.other ?? ''}:${issue.message}`}
               className={`health-row${open ? ' health-clickable' : ''}${current ? ' health-current' : ''}`}
               aria-current={current ? 'true' : undefined}
               onClick={open}
@@ -64,11 +65,13 @@ function IssueGroup({
               <span className="health-cell">
                 <SeverityBadge severity={issue.severity} />
               </span>
+              {/* biome-ignore lint/a11y/noStaticElementInteractions lint/a11y/useKeyWithClickEvents: only stops the row shortcut from firing twice */}
               <span className="health-cell health-cell-page" onClick={stop}>
                 {page ? <PageLink id={page} /> : <span className="health-muted">no page</span>}
               </span>
               <span className="health-cell health-row-msg">{issue.message}</span>
               {showOther && (
+                // biome-ignore lint/a11y/noStaticElementInteractions lint/a11y/useKeyWithClickEvents: only stops the row shortcut from firing twice
                 <span className="health-cell health-cell-other" onClick={stop}>
                   {issue.other && (
                     <>

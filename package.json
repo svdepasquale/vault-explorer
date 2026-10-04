@@ -36,6 +36,7 @@
     "zustand": "5.0.15"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.15",
     "@types/d3": "7.4.3",
     "@types/markdown-it": "14.2.0",
     "@types/node": "26.6.4",

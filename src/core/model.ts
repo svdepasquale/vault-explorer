@@ -1,3 +1,4 @@
+import type { Stats } from 'node:fs';
 import { access, readdir, readFile, stat } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import {
@@ -47,7 +48,7 @@ export function pageKind(id: string, folder: string, type: string | null): PageK
 
 /** Throws VaultError unless `root` looks like a vault (a directory with a wiki/ folder). */
 export async function assertVault(root: string): Promise<void> {
-  let info;
+  let info: Stats;
   try {
     info = await stat(root);
   } catch {

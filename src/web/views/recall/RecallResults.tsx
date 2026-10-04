@@ -318,7 +318,7 @@ export function RecallResults({ run, stale }: { run: RecallRun; stale: boolean }
           </div>
           <ol className={`recall-list${hasScore ? '' : ' is-single'}`}>
             {candidates.map((c, i) => (
-              <ResultRow key={`${run.id}:${i}`} candidate={c} rank={i + 1} ctx={ctx} />
+              <ResultRow key={`${run.id}:${c.chunkId ?? c.path}`} candidate={c} rank={i + 1} ctx={ctx} />
             ))}
           </ol>
         </>

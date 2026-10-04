@@ -193,7 +193,7 @@ export function layoutGraph(graph: VaultGraph, previous: Positions, options: { f
     let sx = 0;
     let sy = 0;
     let n = 0;
-    graph.forEachNeighbor(node, (nb, nbAttrs) => {
+    graph.forEachNeighbor(node, (_nb, nbAttrs) => {
       if (nbAttrs.kind === 'nav') return;
       sx += nbAttrs.x;
       sy += nbAttrs.y;

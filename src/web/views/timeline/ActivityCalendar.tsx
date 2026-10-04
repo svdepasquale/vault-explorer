@@ -102,12 +102,13 @@ export function ActivityCalendar({ data, commits, palette, day, onDay }: Activit
       <div ref={ref} className="timeline-calendar-plot timeline-plot">
         {options && <PlotFigure options={options} onSelect={onSelect} />}
       </div>
-      <div className="timeline-scale" aria-label="Color scale: commits per day">
+      <div className="timeline-scale" role="group" aria-label="Color scale: commits per day">
         <span className="timeline-scale-title">Commits per day</span>
         <span className="timeline-scale-item">
           <span className="timeline-swatch" style={{ background: palette.grid }} />0
         </span>
         {bounds.map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: one legend entry per color step, positional
           <span key={i} className="timeline-scale-item">
             <span className="timeline-swatch" style={{ background: colors[i] }} />
             {bucketLabel(bounds, i)}

@@ -222,6 +222,7 @@ export function Sigma2D({ graph, ctx, positions, onPositionsChange, layoutTick, 
     return () => observer.disconnect();
   }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reducers read styleRef; ctx, hovered and layoutTick are the refresh triggers
   useEffect(() => {
     const sigma = sigmaRef.current;
     if (!sigma) return;
@@ -251,6 +252,7 @@ export function Sigma2D({ graph, ctx, positions, onPositionsChange, layoutTick, 
       ? [...visible]
       : null;
   const framedKey = framedIds ? [...framedIds].sort().join('\n') : null;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: framedIds comes from the render that changed framedKey, the real trigger
   useEffect(() => {
     const sigma = sigmaRef.current;
     if (!sigma) return;

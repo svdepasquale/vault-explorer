@@ -83,7 +83,7 @@ export function lenientParse(raw: string): Record<string, unknown> {
     }
 
     const sub = /^[ \t]+([A-Za-z_][\w-]*):(?:[ \t]+(.*))?$/.exec(line);
-    if (sub && sub[1]) {
+    if (sub?.[1]) {
       if (!nested) {
         nested = {};
         out[key] = nested;

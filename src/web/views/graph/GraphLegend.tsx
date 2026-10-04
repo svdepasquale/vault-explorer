@@ -79,7 +79,7 @@ export function GraphLegend({ visible }: { visible: Set<string> }) {
   }
 
   return (
-    <div className="graph-legend card" aria-label="Legend">
+    <div className="graph-legend card" role="group" aria-label="Legend">
       <ul className="legend-list">{rows}</ul>
       <ul className="legend-list legend-edges">
         <li className="legend-row">

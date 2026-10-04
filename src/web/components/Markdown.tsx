@@ -127,5 +127,11 @@ export function PageMarkdown({ id }: { id: string }) {
   if (error) return <p className="panel-error">{error}</p>;
   if (source === null) return <p className="panel-muted">Loading…</p>;
   // Safe: markdown-it runs with html:false, so page text is escaped before it reaches the DOM.
-  return <div className="markdown" onClick={onClick} dangerouslySetInnerHTML={{ __html: html }} />;
+  // The click handler only delegates for the wikilink anchors inside, which are focusable.
+  return (
+    // biome-ignore lint/security/noDangerouslySetInnerHtml: markdown-it output with html:false (escaped)
+    // biome-ignore lint/a11y/noStaticElementInteractions: delegated clicks for the focusable wikilink anchors inside
+    // biome-ignore lint/a11y/useKeyWithClickEvents: the anchors handle Enter themselves; this only routes the click
+    <div className="markdown" onClick={onClick} dangerouslySetInnerHTML={{ __html: html }} />
+  );
 }

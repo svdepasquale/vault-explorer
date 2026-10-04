@@ -148,8 +148,8 @@ function Details({ page, derived }: { page: Page; derived: Derived }) {
         <section className="panel-section">
           <h3>Health</h3>
           <ul className="issue-list">
-            {issues.map((issue, i) => (
-              <li key={i}>
+            {issues.map((issue) => (
+              <li key={`${issue.check}:${issue.other ?? ''}:${issue.message}`}>
                 <SeverityBadge severity={issue.severity} />
                 <span className="issue-check">{HEALTH_CHECKS[issue.check].label}</span>
                 <span className="issue-message">{issue.message}</span>

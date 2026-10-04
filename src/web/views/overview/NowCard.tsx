@@ -22,6 +22,7 @@ function HotItemView({ html }: { html: string }) {
   const [open, setOpen] = useState(false);
   const [overflows, setOverflows] = useState(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: html is the trigger to re-measure the clamped text
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el || open) return;
@@ -35,6 +36,7 @@ function HotItemView({ html }: { html: string }) {
   return (
     <li className="overview-hot-item">
       {/* Safe: markdown-it runs with html:false, so item text is escaped before it reaches the DOM. */}
+      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: markdown-it output with html:false (escaped) */}
       <div ref={ref} className={`markdown overview-hot-text${open ? '' : ' is-clamped'}`} dangerouslySetInnerHTML={{ __html: html }} />
       {(overflows || open) && (
         <button
@@ -60,6 +62,7 @@ function HotSectionView({ section, render }: { section: HotSection; render: (tex
       </h4>
       <ul className="overview-hot-list">
         {section.items.map((item, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: hot.md items in file order; the text alone may repeat
           <HotItemView key={`${i}:${item.text}`} html={render(item.text)} />
         ))}
       </ul>
@@ -115,12 +118,13 @@ export function NowCard({ hot }: { hot: HotSummary | null }) {
       </header>
       {hot && !primary && <p className="overview-empty">hot.md has no list items under its ## sections.</p>}
       {primary && render && (
+        // biome-ignore lint/a11y/noStaticElementInteractions lint/a11y/useKeyWithClickEvents: delegated clicks for the focusable wikilink anchors inside
         <div className={`overview-now-grid${rest.length ? ' has-aside' : ''}`} onClick={onClick}>
           <HotSectionView section={primary} render={render} />
           {rest.length > 0 && (
             <div className="overview-now-aside">
-              {rest.map((section, i) => (
-                <HotSectionView key={`${i}:${section.title}`} section={section} render={render} />
+              {rest.map((section) => (
+                <HotSectionView key={section.title} section={section} render={render} />
               ))}
             </div>
           )}

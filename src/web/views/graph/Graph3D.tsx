@@ -88,6 +88,7 @@ export default function Graph3D({ graph, ctx, positions, onReady }: Graph3DProps
   };
 
   // One instance for the lifetime of the view; per-node objects are built once.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: one instance per mount; styleSprite and flyTo only read refs
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -223,6 +224,7 @@ export default function Graph3D({ graph, ctx, positions, onReady }: Graph3DProps
 
   // Looks: colors, sizes, edge colors, labels. Accessor updates repaint existing objects;
   // labels are updated in place.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: styles are read from styleRef; ctx and hovered are the repaint triggers
   useEffect(() => {
     const fg = fgRef.current;
     if (!fg) return;

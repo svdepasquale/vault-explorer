@@ -22,7 +22,7 @@ const ONE_WAY = PREDICATES.filter((p) => !p.inverse).map((p) => p.name);
 
 function Thresholds() {
   return (
-    <footer className="health-footnote" aria-labelledby="health-thresholds-title">
+    <section className="health-footnote" aria-labelledby="health-thresholds-title">
       <h2 id="health-thresholds-title" className="health-section-title">
         Thresholds
       </h2>
@@ -49,7 +49,7 @@ function Thresholds() {
           inverse, so one side is enough.
         </li>
       </ul>
-    </footer>
+    </section>
   );
 }
 

@@ -93,9 +93,9 @@ export function QuickOpen() {
         }}
       />
       {open && results.length > 0 && (
-        <ul className="quick-open-results" role="listbox">
+        <ul className="quick-open-results" aria-label="Matching pages">
           {results.map((page, i) => (
-            <li key={page.id} role="option" aria-selected={i === active}>
+            <li key={page.id}>
               <button
                 type="button"
                 className={`quick-open-item${i === active ? ' active' : ''}`}

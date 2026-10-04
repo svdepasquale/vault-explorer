@@ -37,7 +37,7 @@ export function VaultPicker({ inline = false }: { inline?: boolean }) {
   const isMac = status?.platform === 'darwin';
 
   const body = (
-    <div className={`picker${inline ? ' picker-inline' : ''}`} role={inline ? undefined : 'dialog'} aria-modal={inline ? undefined : true} aria-labelledby="picker-title">
+    <div className={`picker${inline ? ' picker-inline' : ''}`} {...(inline ? { role: 'region', 'aria-labelledby': 'picker-title' } : { role: 'dialog', 'aria-modal': true, 'aria-labelledby': 'picker-title' })}>
       <h2 id="picker-title">{inline ? 'Open a vault' : 'Switch vault'}</h2>
       <p className="picker-hint">
         Pick the root of a knowledge-vault repository — the folder that contains <code>wiki/</code>. Nothing is written to it.
@@ -65,6 +65,7 @@ export function VaultPicker({ inline = false }: { inline?: boolean }) {
           value={path}
           onChange={(e) => setPath(e.target.value)}
           disabled={busy}
+          // biome-ignore lint/a11y/noAutofocus: the user just opened this dialog; focus belongs in its input
           autoFocus={!inline}
         />
         <button type="submit" className="btn btn-primary" disabled={busy || !path.trim()}>
@@ -93,6 +94,7 @@ export function VaultPicker({ inline = false }: { inline?: boolean }) {
 
   if (inline) return <div className="app-empty">{body}</div>;
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: click outside to close; Escape closes it from the keyboard (App)
     <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && setPickerOpen(false)}>
       {body}
     </div>

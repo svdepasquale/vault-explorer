@@ -109,6 +109,7 @@ export function TimeBar({ visibleNodes, visibleEdges }: { visibleNodes: number; 
         <svg className="timebar-hist" viewBox={`0 0 ${weeks.length} 20`} preserveAspectRatio="none" aria-hidden="true">
           {weeks.map((n, i) => (
             <rect
+              // biome-ignore lint/suspicious/noArrayIndexKey: one bar per week, positional and fixed for the model
               key={i}
               x={i + 0.12}
               width={0.76}
