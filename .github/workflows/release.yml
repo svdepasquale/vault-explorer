@@ -1,0 +1,78 @@
+name: release
+
+# On a version tag (`git tag v0.2.0 && git push origin v0.2.0`): run the full
+# check, package a ready-to-run tarball (the tagged source plus the built UI),
+# attest its build provenance, and publish it as a GitHub release.
+#
+# Running a release: extract, `npm ci --omit=dev` (only `yaml` is a runtime
+# dependency), then `node bin/vault-explorer.js --vault <path>`. Node refuses
+# to run TypeScript from inside node_modules, so the tarball is meant to be
+# extracted somewhere ordinary, not installed as a package.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+# Never cancel a release half-way: a tag gets one complete run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # create the release
+      id-token: write # sign the provenance attestation (Sigstore)
+      attestations: write # store it
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '26'
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The same gate as local `npm run check`: typecheck, lint, Node
+      # type-stripping smoke test, tests, production build.
+      - name: Check
+        run: npm run check
+
+      - name: Package
+        id: package
+        run: |
+          set -euo pipefail
+          name="vault-explorer-${GITHUB_REF_NAME}"
+          git archive --format=tar --prefix="${name}/" HEAD > "${name}.tar"
+          tar --append --file="${name}.tar" --transform "s,^,${name}/," dist
+          gzip -9 "${name}.tar"
+          sha256sum "${name}.tar.gz" > "${name}.tar.gz.sha256"
+          echo "tarball=${name}.tar.gz" >> "$GITHUB_OUTPUT"
+
+      # Artifact attestations are free on public repositories only, the same
+      # guard platform-apps uses for its image.
+      - name: Attest build provenance
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: ${{ steps.package.outputs.tarball }}
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARBALL: ${{ steps.package.outputs.tarball }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "$TARBALL" "$TARBALL.sha256" \
+            --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag

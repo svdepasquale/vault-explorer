@@ -1,0 +1,147 @@
+name: claude-review
+
+# Tranche C of the 2026-08-22 GitHub Pro evaluation. Deliberately NOT part of
+# the $4/mo calculation: this depends on the Claude subscription and the Claude
+# GitHub App, and works the same on Free. It is here because it covers what no
+# scanner does — intent, not syntax.
+#
+# INERT UNTIL A TOKEN EXISTS. The job self-skips while the
+# `CLAUDE_CODE_OAUTH_TOKEN` secret is unset, so this can be merged before the
+# setup is done. To activate:
+#   1. install the Claude GitHub App on this repo
+#   2. run `claude setup-token` locally
+#   3. `gh secret set CLAUDE_CODE_OAUTH_TOKEN -R svdepasquale/vault-explorer`
+# Nothing else needs to change; the next PR picks it up.
+#
+# THIS IS ADVISORY AND MUST NEVER BE A GATE. Claude posts comments, it cannot
+# approve, and it is deliberately absent from the `main-protection` ruleset's
+# required status checks. A review that can block a merge is a review that gets
+# rubber-stamped. The real gate is the human `gh pr merge` (see renovate.json).
+
+on:
+  pull_request:
+    # No `synchronize`: re-reviewing on every push burns Actions minutes for
+    # diminishing returns. Push more commits and ask again with `@claude` if a
+    # re-read is actually wanted.
+    types: [opened, ready_for_review]
+  issue_comment:
+    types: [created]
+
+# Workflow level stays read-only. The two write scopes the action needs to
+# post its comment live on the `review:` job below, so a step added to this
+# file later — including anything the pinned claude-code-action itself runs —
+# does not inherit a token that can write PR and issue comments just by being
+# here. These were zizmor's only two HIGH findings in either repo; the repo's
+# own gate could not see them because ci-security.yml runs the default
+# persona, and `excessive-permissions` at the workflow level is auditor-only.
+permissions:
+  contents: read
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    # Comments fire this workflow on issues too, so filter to PR comments that
+    # actually mention the trigger phrase. Without the `.pull_request` check
+    # every issue comment in the repo would start a runner.
+    if: >-
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       contains(github.event.comment.body, '@claude'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Scoped to the one job that actually posts. Claude comments on the PR
+    # (pull-requests) and on issue-comment threads (issues); it cannot
+    # approve, and `claude_args` keeps its toolset read-only.
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      # `secrets` is not usable in a job-level `if:`, so the presence check has
+      # to be a step that exports a flag. Every later step hangs off it.
+      - name: Is Claude configured?
+        id: gate
+        env:
+          CLAUDE_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -n "${CLAUDE_TOKEN}" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=claude-review inactive::CLAUDE_CODE_OAUTH_TOKEN is not set. Install the Claude GitHub App, run 'claude setup-token', then 'gh secret set CLAUDE_CODE_OAUTH_TOKEN'. Skipping."
+          fi
+
+      - name: Checkout
+        if: steps.gate.outputs.enabled == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history: the review is much better when it can read why the
+          # surrounding code got that way, and this repo keeps its reasoning in
+          # commit messages rather than in docs.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Claude review
+        if: steps.gate.outputs.enabled == 'true'
+        uses: anthropics/claude-code-action@9171db3e57d6a3140a37ddc2ba92788584e0ead6 # v1.0.234
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          track_progress: true
+          use_sticky_comment: true
+          # OFF on purpose. These links hand a reader a one-click path into
+          # editing this repo, and a merge here applies infrastructure. The
+          # upstream docs warn against PR auto-fix on repos where a PR can
+          # trigger a deploy; this is that repo. A merge here force-pushes
+          # gitops/main and Argo CD auto-syncs it, so a one-click fix link
+          # would be one click from production.
+          include_fix_links: false
+          # Empty = no bot-authored trigger is honoured, which is the default
+          # and is kept deliberately. Renovate PR bodies embed upstream release
+          # notes verbatim — untrusted text, in a job holding a write-scoped
+          # GITHUB_TOKEN. Do not set this to '*' here.
+          allowed_bots: ""
+          # Read-only toolset. Claude reviews; it does not edit, commit, or run
+          # anything that mutates. Widening this is what turns an advisory
+          # reviewer into an actor on infrastructure.
+          claude_args: >-
+            --allowedTools Read,Grep,Glob,Bash(git diff:*),Bash(git log:*),Bash(git show:*)
+          prompt: |
+            Review this pull request for svdepasquale's homelab applications repo
+            (Helm charts + Argo CD + an Astro site, on a single-node k3s cluster
+            with a single operator). The infrastructure lives in the sibling repo
+            platform-infra; this one holds what runs on it.
+
+            Weight your attention by blast radius, not by line count:
+
+            1. Anything that reaches the cluster without a human in between.
+               Argo CD auto-syncs with prune and selfHeal from `main` for four
+               Applications, and the site release force-pushes `gitops/main`.
+               A chart change is applied minutes after merge, unreviewed by
+               anything else. Deleting or renaming a resource is a prune.
+            2. NetworkPolicies and PodSecurity. The namespaces run default-deny
+               and the SSRF carve-outs are load-bearing: Miniflux fetches
+               arbitrary feed URLs and Vaultwarden fetches arbitrary icons, so a
+               widened egress block or a missing `except` range is a real hole,
+               not a style point. `100.64.0.0/10` is the tailnet.
+            3. The release pipeline in `site.yml` and `scripts/verify-deploy.sh`:
+               the verify gate and its auto-rollback are the only thing standing
+               between a bad image and a broken public site. Changes to the
+               supersede stand-down, the SHA-stamped `/version` endpoint, or the
+               rollback push deserve real scrutiny.
+            4. Values that Renovate automerges. Patch, pin and digest bumps land
+               on `main` with nobody at the merge, so anything that widens what
+               automerges is a change to who approves a production deploy.
+            5. Whether the comments still tell the truth. This codebase treats
+               comments as load-bearing documentation, and a comment that has
+               gone stale is treated as a defect, not a nit.
+
+            Be specific and cite `file:line`. If you are unsure whether
+            something is a real problem, say so rather than padding the review —
+            a short accurate review is worth more than a thorough-looking one.
+            Do not comment on formatting, and do not restate what the diff does.

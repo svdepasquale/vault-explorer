@@ -1,8 +1,10 @@
 name: ci
 
-# Typecheck, unit + integration tests and the production build, on every pull
-# request and on every push to main. One job on purpose: the steps share a
-# single `npm ci`, and the first red step already names what broke.
+# Lint + format, dependency audit, and typecheck / tests / build / smoke, on
+# every pull request and every push to main. Three independent jobs, so a lint
+# finding never hides a failing test (same split as the other repos: a lint job
+# beside the build). The check job keeps its steps together: they share one
+# `npm ci`, and the first red step already names what broke.
 
 on:
   pull_request:
@@ -27,6 +29,51 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '26'
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm ci
+
+      # `biome ci` = lint (recommended preset, see biome.json) + format check,
+      # read-only. Warnings are printed; errors fail the job.
+      - name: Lint and format
+        run: npm run lint
+
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '26'
+          package-manager-cache: false
+
+      # Against the lockfile, no install needed. All dependencies, not only
+      # runtime ones: the SPA libraries are devDependencies but ship inside
+      # the bundle the browser runs. High and critical only, so a low-severity
+      # advisory in a build tool does not turn every run red.
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 10

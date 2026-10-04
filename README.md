@@ -8,7 +8,7 @@ Read-only, served on `127.0.0.1`, nothing resident: start it, look, Ctrl-C.
 
 | View | What it shows |
 |---|---|
-| **Graph** | Every page as a node, sized by how many pages link to it. Typed `relations:` are arrows, body wikilinks thin lines. Color by **kind** (entity / source / runbook / profile; meta, folds and navigation in gray), by **freshness** (days since the last update), or **highlight** one domain, tag or status. Hover dims everything but the neighbourhood; click opens the page panel; double-click focuses its 1-hop neighbourhood (up to 3 hops). Drag nodes; the layout is remembered per vault. **2D** (sigma.js) or **3D** (three.js, rotatable). |
+| **Graph** | Every page as a node, sized by how many pages link to it. Typed `relations:` are arrows, body wikilinks thin lines. Color by **kind** (entity / source / runbook / profile; meta, folds and navigation in gray), by **freshness** (days since the last update), or **highlight** one domain, tag or status. Labels **on hover** by default (the page under the pointer and its connections; or *always*). Hover dims everything but the neighbourhood; click opens the page panel; double-click focuses its 1-hop neighbourhood (up to 3 hops). Drag nodes; the layout is remembered per vault. **2D** (sigma.js) or **3D** (three.js, rotatable). |
 | **Time travel** | Replays the vault growing: pages appear at their first commit, links on the day git first saw them written (dated from `git log -p`, renames followed). New pages are labelled while they are new. Works in 2D and 3D. |
 | **Timeline** | Commit calendar, cumulative pages by kind and links written, one lifeline per page (deleted pages included), and the commit feed (`<page>: what changed`) with filters. |
 | **Overview** | Headline numbers, the `hot.md` digest (open threads with clickable links), composition by kind / domain / status / tag, relations by predicate, hubs and outliers. |
@@ -42,6 +42,8 @@ Starting it again while it runs just reopens the browser on the running instance
 
 **As an app:** in Safari, *File → Add to Dock* (or Chrome, *⋮ → Cast, save and share → Install page as app*) gives the page its own window and Dock icon. **As a command:** `npm link` once exposes `vault-explorer` on the `PATH`.
 
+**From a release:** each `v*` tag publishes a tarball with the source and the built UI, plus its build-provenance attestation (`gh attestation verify <tarball> -R svdepasquale/vault-explorer`). Extract it anywhere outside `node_modules`, run `npm ci --omit=dev` (only `yaml` is needed at runtime) and `node bin/vault-explorer.js --vault <path>`.
+
 ## What it reads, and what it never does
 
 - Pages: every `.md` under `wiki/` (dot-folders and symlinks skipped). Frontmatter is parsed as YAML, with a line-based fallback for invalid blocks (reported in Health). Kinds come from folder + `type` (`runbooks/` and `folds/` are `type: meta` in the vault).
@@ -55,7 +57,8 @@ Starting it again while it runs just reopens the browser on the running instance
 
 ```bash
 npm run dev     # server + Vite middleware with hot reload, http://127.0.0.1:7418/
-npm run check   # typecheck (server + SPA), Node type-stripping smoke test, tests, production build
+npm run check   # typecheck, lint + format check (Biome), Node type-stripping smoke test, tests, build
+npm run format  # apply the Biome formatting
 ```
 
 ```

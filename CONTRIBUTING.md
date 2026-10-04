@@ -26,8 +26,12 @@ Thanks for considering a contribution. vault-explorer is a local, read-only expl
 ```bash
 npm ci
 
-# Typecheck (server + SPA), unit and integration tests, production build
+# Typecheck (server + SPA), lint + format check (Biome), Node type-stripping
+# smoke test, unit and integration tests, production build
 npm run check
+
+# Apply the formatting Biome checks
+npm run format
 
 # Dev server: the UI through Vite with hot reload
 npm run dev
@@ -38,7 +42,7 @@ npm run build && npm start -- --vault /path/to/vault
 
 The integration tests create throwaway git repositories in the system temp directory, with their own identity and signing turned off, so they need nothing but `git` on `PATH`. The fixture vault lives in `test/fixtures/vault/` in its final state; the history is scripted in the test.
 
-CI runs the same install, typecheck, tests and build on every pull request (`.github/workflows/ci.yml`), plus gitleaks, actionlint and zizmor (`.github/workflows/ci-security.yml`).
+CI runs the same checks on every pull request and push to main (`.github/workflows/ci.yml`: lint, dependency audit, typecheck/tests/build/smoke), plus gitleaks, actionlint and zizmor (`.github/workflows/ci-security.yml`). Pull requests also get a Claude review once `CLAUDE_CODE_OAUTH_TOKEN` is set (`claude-review.yml`). A `v*` tag runs `release.yml`: full check, tarball, build-provenance attestation, GitHub release.
 
 ## Commit style
 
