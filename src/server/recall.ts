@@ -31,7 +31,8 @@ function pageIdOf(path: string): string | null {
 export function runRecall(vault: string, query: string, top: number): Promise<RecallResponse> {
   const started = Date.now();
   return new Promise((resolvePromise, reject) => {
-    const child = spawn('python3', [join(vault, 'scripts', 'retrieve.py'), '-', '--top', String(top)], {
+    // Chunk mode, as in Claude's own read protocol: ranked chunks, not one hit per page.
+    const child = spawn('python3', [join(vault, 'scripts', 'retrieve.py'), '-', '--top', String(top), '--chunks'], {
       cwd: vault,
       env: process.env,
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -70,7 +71,7 @@ export function runRecall(vault: string, query: string, top: number): Promise<Re
             chunkId: typeof c['chunk_id'] === 'string' ? c['chunk_id'] : null,
             score: num(c['rerank_score']),
             bm25: num(c['bm25_score']),
-            snippet: typeof c['snippet'] === 'string' ? c['snippet'] : typeof c['text'] === 'string' ? c['text'] : '',
+            snippet: typeof c['text'] === 'string' ? c['text'] : typeof c['snippet'] === 'string' ? c['snippet'] : '',
           };
         });
         resolvePromise({

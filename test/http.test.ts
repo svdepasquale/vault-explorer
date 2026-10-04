@@ -283,3 +283,13 @@ describe('static file serving', () => {
     },
   );
 });
+
+describe('malformed request targets', () => {
+  it('answers 400 instead of crashing on a URL that cannot be parsed, and keeps serving', async () => {
+    for (const target of ['//[', '//%zz', 'http://[/']) {
+      const reply = await send(target);
+      expect(reply.status).toBe(400);
+    }
+    expect((await send('/api/status')).status).toBe(200);
+  });
+});

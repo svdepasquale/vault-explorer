@@ -176,6 +176,7 @@ export function IssueList({
 
   const showOnGraph = (id: string): void => {
     updateGraph({ showAsymmetric: true, focusDepth: 1 });
+    useStore.getState().setTimeCursor(null);
     select(id);
     setView('graph');
   };

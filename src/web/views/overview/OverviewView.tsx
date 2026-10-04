@@ -24,13 +24,15 @@ const TOP_TAGS = 20;
 const EMPHASIS_HINT = 'Click to highlight on the graph';
 
 function emphasize(field: EmphasisField, value: string): void {
-  const { updateGraph, setView } = useStore.getState();
+  const { updateGraph, setView, setTimeCursor } = useStore.getState();
   updateGraph({ colorBy: 'emphasis', emphasis: { field, value } });
+  setTimeCursor(null);
   setView('graph');
 }
 
 function showPredicate(stat: PredicateStat): void {
-  const { updateGraph, setView } = useStore.getState();
+  const { updateGraph, setView, setTimeCursor } = useStore.getState();
+  setTimeCursor(null);
   // When the predicate has one-sided relations, also paint them, as this chart does.
   updateGraph({ predicate: stat.name, showRelations: true, ...(stat.oneSided > 0 ? { showAsymmetric: true } : {}) });
   setView('graph');

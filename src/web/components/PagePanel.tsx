@@ -287,6 +287,7 @@ export function PagePanel({ id }: { id: string }) {
           className="btn btn-small"
           onClick={() => {
             updateGraph({ focusDepth: 1 });
+            useStore.getState().setTimeCursor(null);
             if (view !== 'graph') setView('graph');
           }}
         >

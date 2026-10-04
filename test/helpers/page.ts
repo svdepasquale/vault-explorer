@@ -30,6 +30,7 @@ export function makePage(id: string, overrides: Partial<Page> = {}): Page {
     words: 64,
     frontmatter: { name: stem, description: `About ${stem}`, type, tags: ['fixture'] },
     frontmatterError: null,
+    frontmatterCuts: [],
     git: { first: null, last: null, commits: [] },
     ...overrides,
   };

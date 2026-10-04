@@ -105,6 +105,8 @@ export class VaultService {
 
   private async startWatching(root: string): Promise<void> {
     const ignoreDotPaths = (name: string | null): boolean => !!name && name.split(/[\\/]/).some((s) => s.startsWith('.'));
+    // A newer select() may have switched vaults while this one was rebuilding.
+    if (this.vault !== root) return;
     try {
       this.watchers.push(
         watch(join(root, WIKI_DIR), { recursive: true }, (_event, name) => {

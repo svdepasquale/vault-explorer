@@ -40,6 +40,15 @@ export function computeHealth(input: HealthInput): HealthIssue[] {
     if (page.frontmatterError) {
       issues.push({ check: 'frontmatter-yaml', severity: 'error', page: page.id, message: page.frontmatterError });
     }
+    for (const key of page.frontmatterCuts) {
+      const value = page.frontmatter[key];
+      issues.push({
+        check: 'frontmatter-comment-cut',
+        severity: 'warning',
+        page: page.id,
+        message: `${key}: cut at an unquoted " #" after ${typeof value === 'string' ? value.length : 0} chars (YAML comment); quote the value`,
+      });
+    }
     if (input.missingFrontmatter.includes(page.id)) continue;
     const missing = REQUIRED_FIELDS.filter((f) => {
       const v = page.frontmatter[f];
@@ -58,7 +67,11 @@ export function computeHealth(input: HealthInput): HealthIssue[] {
     }
   }
 
+  const seenUnresolved = new Set<string>();
   for (const u of unresolved) {
+    const key = `${u.source}\u0000${u.where}\u0000${u.predicate ?? ''}\u0000${u.raw}`;
+    if (seenUnresolved.has(key)) continue;
+    seenUnresolved.add(key);
     if (u.where === 'relations') {
       issues.push({
         check: 'relation-unresolved',
@@ -140,7 +153,8 @@ export function computeHealth(input: HealthInput): HealthIssue[] {
   }
 
   for (const page of pages) {
-    if (page.status && STALE_STATUSES.includes(page.status) && page.updated) {
+    // Archived pages (index: false) are exempt, as in the vault's own lint.
+    if (page.indexed && page.status && STALE_STATUSES.includes(page.status) && page.updated) {
       const age = Math.floor((now.getTime() - Date.parse(`${page.updated}T00:00:00Z`)) / DAY_MS);
       if (age > STALE_DAYS) {
         issues.push({

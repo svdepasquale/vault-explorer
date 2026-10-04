@@ -6,6 +6,8 @@ export interface Frontmatter {
   data: Record<string, unknown>;
   /** Strict YAML error message; `data` then comes from the lenient parser. */
   error: string | null;
+  /** Keys whose value YAML cut at an unquoted ` #` (a comment) that line-based readers keep. */
+  cuts: string[];
   body: string;
 }
 
@@ -15,20 +17,36 @@ const BLOCK = /^---[ \t]*\r?\n(?:([\s\S]*?)\r?\n)?(?:---|\.\.\.)[ \t]*(?:\r?\n|$
 export function readFrontmatter(text: string): Frontmatter {
   const src = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
   const match = BLOCK.exec(src);
-  if (!match) return { present: false, raw: null, data: {}, error: null, body: src };
+  if (!match) return { present: false, raw: null, data: {}, error: null, cuts: [], body: src };
   const raw = match[1] ?? '';
   const body = src.slice(match[0].length);
   try {
     const parsed: unknown = parse(raw);
-    if (parsed === null || parsed === undefined) return { present: true, raw, data: {}, error: null, body };
+    if (parsed === null || parsed === undefined) return { present: true, raw, data: {}, error: null, cuts: [], body };
     if (typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return { present: true, raw, data: lenientParse(raw), error: 'frontmatter is not a key/value mapping', body };
+      return { present: true, raw, data: lenientParse(raw), error: 'frontmatter is not a key/value mapping', cuts: [], body };
     }
-    return { present: true, raw, data: parsed as Record<string, unknown>, error: null, body };
+    const data = parsed as Record<string, unknown>;
+    return { present: true, raw, data, error: null, cuts: commentCuts(raw, data), body };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return { present: true, raw, data: lenientParse(raw), error: message.split('\n')[0] ?? message, body };
+    return { present: true, raw, data: lenientParse(raw), error: message.split('\n')[0] ?? message, cuts: [], body };
   }
+}
+
+/**
+ * Keys whose plain value YAML ended at an unquoted ` #` (whitespace + `#` starts a
+ * comment): the vault's own line-based tools read the full line, YAML does not.
+ */
+export function commentCuts(raw: string, data: Record<string, unknown>): string[] {
+  const lines = lenientParse(raw);
+  const cuts: string[] = [];
+  for (const [key, value] of Object.entries(data)) {
+    const line = lines[key];
+    if (typeof value !== 'string' || typeof line !== 'string') continue;
+    if (line.length > value.length && line.startsWith(value) && /^[ \t]+#/.test(line.slice(value.length))) cuts.push(key);
+  }
+  return cuts;
 }
 
 /**

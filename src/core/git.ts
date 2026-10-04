@@ -128,6 +128,9 @@ export function diffPath(raw: string): string {
  * `git log -p --unified=0` pass over wiki/, reading added lines only.
  * Returns pageId → (raw target → ISO date of the first commit adding it).
  * Frontmatter `relations:` lines are wikilinks too, so typed edges get dates as well.
+ * History follows each file through renames (a path freed by a rename starts a new
+ * lineage), and a page deleted then re-created at the same path keeps its earlier dates.
+ * Known limit: under `--unified=0` a line inside a fenced block cannot be told apart.
  */
 export async function readLinkHistory(
   dir: string,
@@ -154,29 +157,75 @@ export async function readLinkHistory(
   } catch {
     return null;
   }
-  const firstSeen = new Map<string, Map<string, string>>();
+
+  interface Lineage {
+    path: string;
+    seen: Map<string, string>;
+  }
+  const lineages: Lineage[] = [];
+  const live = new Map<string, Lineage>();
+  const lineageAt = (path: string): Lineage => {
+    let lineage = live.get(path);
+    if (!lineage) {
+      lineage = { path, seen: new Map() };
+      lineages.push(lineage);
+      live.set(path, lineage);
+    }
+    return lineage;
+  };
+
   for (const record of out.split(RECORD)) {
     if (!record) continue;
     const newline = record.indexOf('\n');
     const header = newline >= 0 ? record.slice(0, newline) : record;
     const date = header.split(FIELD)[1];
     if (!date) continue;
-    let page: string | null = null;
+    let page: Lineage | null = null;
+    let renameFrom: string | null = null;
+    let deleting = false;
     for (const line of record.slice(newline + 1).split('\n')) {
-      if (line.startsWith('+++ ')) {
-        const path = diffPath(line.slice(4)).replace(/^b\//, '');
-        page = /\.md$/i.test(path) && path !== '/dev/null' ? path.replace(/\.md$/i, '') : null;
-        continue;
-      }
-      if (!page || !line.startsWith('+') || !line.includes('[[')) continue;
-      for (const raw of extract(line.slice(1))) {
-        let seen = firstSeen.get(page);
-        if (!seen) {
-          seen = new Map();
-          firstSeen.set(page, seen);
+      if (line.startsWith('diff --git ')) {
+        page = null;
+        renameFrom = null;
+        deleting = false;
+      } else if (line.startsWith('rename from ')) {
+        renameFrom = diffPath(line.slice(12));
+      } else if (line.startsWith('rename to ')) {
+        const to = diffPath(line.slice(10));
+        const lineage = renameFrom ? live.get(renameFrom) : undefined;
+        if (renameFrom && lineage) {
+          live.delete(renameFrom);
+          lineage.path = to;
+          live.set(to, lineage);
         }
-        if (!seen.has(raw)) seen.set(raw, date);
+      } else if (line.startsWith('deleted file mode')) {
+        deleting = true;
+      } else if (line.startsWith('--- ')) {
+        if (deleting) live.delete(diffPath(line.slice(4)).replace(/^a\//, ''));
+      } else if (line.startsWith('+++ ')) {
+        const raw = diffPath(line.slice(4));
+        const path = raw.replace(/^b\//, '');
+        page = raw !== '/dev/null' && /\.md$/i.test(path) ? lineageAt(path) : null;
+      } else if (page && line.startsWith('+') && line.includes('[[')) {
+        for (const target of extract(line.slice(1))) {
+          if (!page.seen.has(target)) page.seen.set(target, date);
+        }
       }
+    }
+  }
+
+  const firstSeen = new Map<string, Map<string, string>>();
+  for (const lineage of lineages) {
+    if (!/\.md$/i.test(lineage.path)) continue;
+    const id = lineage.path.replace(/\.md$/i, '');
+    let merged = firstSeen.get(id);
+    if (!merged) {
+      merged = new Map();
+      firstSeen.set(id, merged);
+    }
+    for (const [target, date] of lineage.seen) {
+      const known = merged.get(target);
+      if (!known || Date.parse(date) < Date.parse(known)) merged.set(target, date);
     }
   }
   return firstSeen;

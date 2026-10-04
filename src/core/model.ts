@@ -127,6 +127,7 @@ export async function buildVaultModel(root: string, options: BuildOptions = {}):
         words: countWords(stripCode(fm.body)),
         frontmatter: data,
         frontmatterError: fm.error,
+        frontmatterCuts: fm.cuts,
         git: { first: null, last: null, commits: [] },
       };
     }),
@@ -207,11 +208,12 @@ export async function buildVaultModel(root: string, options: BuildOptions = {}):
   const [history, linkHistory] = repo
     ? await Promise.all([
         readHistory(wikiRoot),
-        readLinkHistory(wikiRoot, (line) => extractWikilinks(line).map((ref) => ref.target).filter(Boolean)),
+        // Same rule as the current-state pass: wikilinks inside inline code are not links.
+        readLinkHistory(wikiRoot, (line) => extractWikilinks(stripCode(line)).map((ref) => ref.target).filter(Boolean)),
       ])
     : [null, null];
   const { commits, ghosts } = foldHistory(history ?? [], new Set(ids), pages);
-  if (linkHistory) datePairs(followRenames(linkHistory, commits), resolve, linkMap, relationMap);
+  if (linkHistory) datePairs(linkHistory, resolve, linkMap, relationMap);
 
   // ── hot cache ────────────────────────────────────────────────────────────
   let hot: HotSummary | null = null;
@@ -274,33 +276,6 @@ export async function buildVaultModel(root: string, options: BuildOptions = {}):
   };
 }
 
-/** Re-key first-seen dates recorded under old paths to the page's current id (renames in `commits`). */
-export function followRenames(linkHistory: Map<string, Map<string, string>>, commits: Commit[]): Map<string, Map<string, string>> {
-  const latest = new Map<string, string>();
-  for (const commit of commits) {
-    for (const ch of commit.changes) {
-      if (ch.status !== 'R' || !ch.from) continue;
-      for (const [old, current] of latest) if (current === ch.from) latest.set(old, ch.id);
-      latest.set(ch.from, ch.id);
-    }
-  }
-  if (!latest.size) return linkHistory;
-  const merged = new Map<string, Map<string, string>>();
-  for (const [page, seen] of linkHistory) {
-    const id = latest.get(page) ?? page;
-    let target = merged.get(id);
-    if (!target) {
-      target = new Map();
-      merged.set(id, target);
-    }
-    for (const [raw, date] of seen) {
-      const known = target.get(raw);
-      if (!known || date < known) target.set(raw, date);
-    }
-  }
-  return merged;
-}
-
 /**
  * Date every link and relation with the first commit that wrote one of its
  * raw targets on the declaring page (resolved with today's resolver).
@@ -318,7 +293,7 @@ function datePairs(
       if (!target || target === source) continue;
       const key = `${source}\u0000${target}`;
       const known = firstWritten.get(key);
-      if (!known || date < known) firstWritten.set(key, date);
+      if (!known || Date.parse(date) < Date.parse(known)) firstWritten.set(key, date);
     }
   }
   for (const link of links.values()) link.since = firstWritten.get(`${link.source}\u0000${link.target}`) ?? null;
@@ -326,7 +301,7 @@ function datePairs(
     const dates = [firstWritten.get(`${rel.from}\u0000${rel.to}`), firstWritten.get(`${rel.to}\u0000${rel.from}`)].filter(
       (d): d is string => d !== undefined,
     );
-    rel.since = dates.length ? dates.reduce((a, b) => (a < b ? a : b)) : null;
+    rel.since = dates.length ? dates.reduce((a, b) => (Date.parse(a) < Date.parse(b) ? a : b)) : null;
   }
 }
 
@@ -396,7 +371,7 @@ export function foldHistory(raw: RawCommit[], current: Set<string>, pages: Page[
     const ghost = ghostsById.get(d.id);
     if (ghost) {
       ghost.commits = [...new Set([...ghost.commits, ...d.lineage.commits])].sort((a, b) => a - b);
-      if (d.deleted > ghost.deleted) ghost.deleted = d.deleted;
+      if (Date.parse(d.deleted) > Date.parse(ghost.deleted)) ghost.deleted = d.deleted;
     } else {
       ghostsById.set(d.id, { id: d.id, created: null, deleted: d.deleted, commits: [...d.lineage.commits] });
     }
@@ -412,6 +387,6 @@ export function foldHistory(raw: RawCommit[], current: Set<string>, pages: Page[
 
   const ghosts = [...ghostsById.values()];
   for (const ghost of ghosts) ghost.created = dateOf(ghost.commits[0]);
-  ghosts.sort((a, b) => a.deleted.localeCompare(b.deleted));
+  ghosts.sort((a, b) => Date.parse(a.deleted) - Date.parse(b.deleted));
   return { commits, ghosts };
 }

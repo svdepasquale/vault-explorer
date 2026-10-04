@@ -18,7 +18,7 @@
     "build": "vite build",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.server.json && tsc -p tsconfig.web.json",
-    "check": "npm run typecheck && npm test && npm run build"
+    "check": "npm run typecheck && node bin/vault-explorer.js --help >/dev/null && npm test && npm run build"
   },
   "dependencies": {
     "@observablehq/plot": "0.6.17",

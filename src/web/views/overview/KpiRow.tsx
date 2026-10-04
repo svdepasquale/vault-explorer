@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { calendarDaysSince } from '../../app/dates.ts';
 import { KIND_LABELS, type HotSummary } from '../../../shared/model.ts';
 import { daysAgo, formatBytes, formatDate, formatNumber } from '../../app/format.ts';
 import { KindDot } from '../../components/KindBadge.tsx';
@@ -22,11 +23,6 @@ function Tile({ label, value, unit, children, className }: { label: ReactNode; v
   );
 }
 
-function daysSince(iso: string | null): number | null {
-  if (!iso) return null;
-  const t = Date.parse(iso);
-  return Number.isNaN(t) ? null : Math.max(0, Math.floor((Date.now() - t) / 86_400_000));
-}
 
 function HotTile({ hot }: { hot: HotSummary | null }) {
   if (!hot) {
@@ -73,7 +69,7 @@ function HotTile({ hot }: { hot: HotSummary | null }) {
 }
 
 export function KpiRow({ stats, hot }: { stats: OverviewStats; hot: HotSummary | null }) {
-  const lastAge = daysSince(stats.lastCommit);
+  const lastAge = calendarDaysSince(stats.lastCommit);
   const twoSidedShare = stats.withInverse ? Math.round((stats.twoSided / stats.withInverse) * 100) : null;
   const perPage = stats.pages ? stats.tagUses / stats.pages : 0;
 

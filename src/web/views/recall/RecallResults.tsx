@@ -266,6 +266,8 @@ export function RecallResults({ run, stale }: { run: RecallRun; stale: boolean }
     state.setHighlight({ query: run.query, ranks });
     // A focused neighbourhood would hide hits outside it.
     if (state.graph.focusDepth > 0) state.updateGraph({ focusDepth: 0 });
+    // Time travel would hide hits born after the cursor.
+    if (state.timeCursor !== null) state.setTimeCursor(null);
     state.setView('graph');
   };
 
@@ -281,7 +283,7 @@ export function RecallResults({ run, stale }: { run: RecallRun; stale: boolean }
           </span>
         </div>
         <div className="recall-results-meta">
-          <StrategyBadge strategy={strategy} tipKey={`strategy:${run.id}`} />
+          {candidates.length > 0 && <StrategyBadge strategy={strategy} tipKey={`strategy:${run.id}`} />}
           <Elapsed ms={response.elapsedMs} tipKey={`elapsed:${run.id}`} />
           <button
             type="button"

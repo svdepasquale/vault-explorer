@@ -1,4 +1,5 @@
 import type { Commit, HealthIssue, Link, Page, Relation, VaultModel } from '../../shared/model.ts';
+import { calendarDaysSince } from './dates.ts';
 import { useStore } from './store.ts';
 
 /** Indexes over the model, computed once per model object. */
@@ -99,10 +100,7 @@ export function derive(model: VaultModel): Derived {
     inbound,
     neighbors,
     commitsOf: (page) => page.git.commits.map((i) => model.commits[i]).filter((c): c is Commit => c !== undefined),
-    ageDays: (page) => {
-      const stamp = page.updated ? Date.parse(`${page.updated}T12:00:00Z`) : page.git.last ? Date.parse(page.git.last) : Number.NaN;
-      return Number.isNaN(stamp) ? null : Math.max(0, Math.floor((today - stamp) / 86_400_000));
-    },
+    ageDays: (page) => calendarDaysSince(page.updated ?? page.git.last, today),
     bornAt: (page) => {
       const stamp = page.git.first ? Date.parse(page.git.first) : page.created ? Date.parse(`${page.created}T12:00:00Z`) : Number.NaN;
       return Number.isNaN(stamp) ? null : stamp;

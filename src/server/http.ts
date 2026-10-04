@@ -230,7 +230,13 @@ export function createHandler(options: HandlerOptions): (req: IncomingMessage, r
       fail(res, 403, 'Forbidden host', 'forbidden-host');
       return;
     }
-    const url = new URL(req.url ?? '/', `http://${req.headers.host}`);
+    let url: URL;
+    try {
+      url = new URL(req.url ?? '/', `http://${req.headers.host}`);
+    } catch {
+      fail(res, 400, 'Bad request URL', 'bad-request');
+      return;
+    }
     if (url.pathname.startsWith('/api/')) {
       api(req, res, url).catch((err: unknown) => {
         if (res.headersSent) {

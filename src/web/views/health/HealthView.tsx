@@ -29,7 +29,7 @@ function Thresholds() {
       <ul>
         <li>
           <strong>{HEALTH_CHECKS.stale.label}</strong>: status {STALE_STATUSES.join(', ')} and a frontmatter <code>updated</code> date more than{' '}
-          {STALE_DAYS} days old.
+          {STALE_DAYS} days old; archived pages (<code>index: false</code>) are exempt.
         </li>
         <li>
           <strong>{HEALTH_CHECKS.oversized.label}</strong>: files over {formatNumber(OVERSIZED_BYTES / 1024)} KB ({formatNumber(OVERSIZED_BYTES)} B); navigation

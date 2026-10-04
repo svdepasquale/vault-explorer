@@ -1,11 +1,13 @@
 import { execFile } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import type { ViteDevServer } from 'vite';
 import { loadConfig } from './config.ts';
 import { createHandler, type HandlerOptions } from './http.ts';
-import { VaultService } from './service.ts';
+import { expandHome, VaultService } from './service.ts';
 
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const DIST_DIR = fileURLToPath(new URL('../../dist/web', import.meta.url));
@@ -34,6 +36,25 @@ async function alreadyRunning(port: number): Promise<boolean> {
     return body.app === 'vault-explorer';
   } catch {
     return false;
+  }
+}
+
+/** Ask the running instance to switch to `vault` (absolute path) when one was requested. */
+async function handOver(port: number, vault: string | undefined): Promise<void> {
+  if (!vault) return;
+  try {
+    const res = await fetch(`http://127.0.0.1:${port}/api/vault`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ path: resolve(expandHome(vault)) }),
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      console.warn(`[vault-explorer] the running instance did not open ${vault}: ${body.error ?? res.status}`);
+    }
+  } catch (err) {
+    console.warn(`[vault-explorer] could not hand ${vault} to the running instance: ${String(err)}`);
   }
 }
 
@@ -74,6 +95,15 @@ async function main(): Promise<void> {
     return;
   }
 
+  // Already running on this port: hand it the requested vault and reopen the browser,
+  // before touching the config or starting Vite.
+  if (await alreadyRunning(port)) {
+    await handOver(port, values.vault ?? process.env['VAULT_EXPLORER_VAULT']);
+    console.log(`[vault-explorer] already running at ${url}`);
+    if (shouldOpen) openBrowser(url);
+    return;
+  }
+
   const pkg = JSON.parse(readFileSync(`${REPO_ROOT}package.json`, 'utf8')) as { version: string };
   const service = new VaultService(await loadConfig());
   const initial = values.vault ?? process.env['VAULT_EXPLORER_VAULT'] ?? service.config.lastVault;
@@ -93,9 +123,10 @@ async function main(): Promise<void> {
     staticDir: values.dev ? null : DIST_DIR,
     devMiddleware: null,
   };
+  let vite: ViteDevServer | undefined;
   if (values.dev) {
     const { createServer: createViteServer } = await import('vite');
-    const vite = await createViteServer({
+    vite = await createViteServer({
       configFile: `${REPO_ROOT}vite.config.ts`,
       server: { middlewareMode: true, hmr: { server } },
       appType: 'spa',
@@ -108,9 +139,11 @@ async function main(): Promise<void> {
     await listen(server, port);
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === 'EADDRINUSE' && (await alreadyRunning(port))) {
+      // Lost a start-up race with another instance.
+      await vite?.close();
+      service.close();
       console.log(`[vault-explorer] already running at ${url}`);
       if (shouldOpen) openBrowser(url);
-      service.close();
       return;
     }
     throw err;

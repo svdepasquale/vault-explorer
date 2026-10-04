@@ -2,7 +2,6 @@ import {
   OVERSIZED_BYTES,
   PAGE_KINDS,
   PREDICATES,
-  STALE_DAYS,
   STALE_STATUSES,
   type Page,
   type PageKind,
@@ -148,8 +147,8 @@ export function computeStats(derived: Derived): OverviewStats {
   const activeLike = pages.filter((p) => p.status !== null && STALE_STATUSES.includes(p.status));
   const aged = activeLike.flatMap((page) => {
     const age = derived.ageDays(page);
-    // Stale mirrors the health check: frontmatter `updated` older than the threshold.
-    return age === null ? [] : [{ page, value: age, flagged: page.updated !== null && age > STALE_DAYS }];
+    // The stale badge is the server's health verdict, so both views always agree.
+    return age === null ? [] : [{ page, value: age, flagged: derived.healthOf.get(page.id)?.some((i) => i.check === 'stale') ?? false }];
   });
   const untouched = [...aged].sort((a, b) => b.value - a.value || a.page.id.localeCompare(b.page.id)).slice(0, TOP);
 

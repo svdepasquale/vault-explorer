@@ -44,7 +44,7 @@ describe('readFrontmatter — strict YAML', () => {
 
   it('reports no frontmatter when the file does not start with ---', () => {
     const text = '# Title\n\n---\nname: not frontmatter\n---\n';
-    expect(readFrontmatter(text)).toEqual({ present: false, raw: null, data: {}, error: null, body: text });
+    expect(readFrontmatter(text)).toEqual({ present: false, raw: null, data: {}, error: null, cuts: [], body: text });
   });
 
   it('reports no frontmatter for an unterminated block', () => {
@@ -187,5 +187,18 @@ describe('asStringList', () => {
 
   it('splits a comma-separated string', () => {
     expect(asStringList('a, #b ,c')).toEqual(['a', 'b', 'c']);
+  });
+});
+
+describe('commentCuts', () => {
+  it('reports a value YAML cut at an unquoted " #"', () => {
+    const fm = readFrontmatter('---\nname: x\ndescription: Mock review #7 for the round\nnote: "kept #1"\n---\n');
+    expect(fm.data['description']).toBe('Mock review');
+    expect(fm.cuts).toEqual(['description']);
+  });
+
+  it('also catches a cut after a tab, and ignores quoted values and a # without whitespace', () => {
+    const fm = readFrontmatter('---\na: x\t# c\nb: "q #1"\nc: z#1\n---\n');
+    expect(fm.cuts).toEqual(['a']);
   });
 });
