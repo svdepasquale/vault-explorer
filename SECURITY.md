@@ -4,7 +4,10 @@
 
 If you discover a security vulnerability in vault-explorer, please **do not** open a public GitHub issue.
 
-Instead, report it privately by email: `silvio.depasquale@pm.me` (the repository is private, so GitHub's private advisories are not available for it).
+Instead, report it privately via one of:
+
+- GitHub Security Advisories: [create a private advisory](https://github.com/svdepasquale/vault-explorer/security/advisories/new)
+- Email: `silvio.depasquale@pm.me`
 
 Please include:
 
