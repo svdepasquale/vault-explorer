@@ -1,6 +1,6 @@
 # vault-explorer
 
-Local graphical explorer for the [knowledge-vault](https://github.com/svdepasquale/knowledge-vault) — the plain-markdown memory Claude reads and writes. It brings back what Obsidian's graph view was used for (a look at the memory, not a reader), and adds what the vault's own conventions make possible: typed relations, git history, health checks and the vault's retrieval.
+Local graphical explorer for a markdown knowledge vault in the LLM-wiki layout — built for the author's own (private) vault, the plain-markdown memory Claude reads and writes: `wiki/` pages with YAML frontmatter, `[[wikilinks]]`, typed `relations:` and a git history. It brings back what Obsidian's graph view was used for (a look at the memory, not a reader), and adds what the vault's own conventions make possible: typed relations, git history, health checks and the vault's retrieval.
 
 Read-only, served on `127.0.0.1`, nothing resident: start it, look, Ctrl-C.
 
