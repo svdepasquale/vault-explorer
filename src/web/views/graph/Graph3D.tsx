@@ -56,7 +56,7 @@ export default function Graph3D({ graph, ctx, positions, onReady }: Graph3DProps
   const fgRef = useRef<Instance | null>(null);
   const nodesRef = useRef(new Map<string, Node3D>());
   const spritesRef = useRef(new Map<string, SpriteText>());
-  const pointerRef = useRef({ x: 0, y: 0 });
+  const pointerRef = useRef({ x: 0, y: 0, inside: false });
   const fittedRef = useRef(false);
   const [hovered, setHovered] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
@@ -88,11 +88,15 @@ export default function Graph3D({ graph, ctx, positions, onReady }: Graph3DProps
       .warmupTicks(40)
       .cooldownTicks(220)
       .onNodeHover((node) => {
-        setHovered(node?.id ?? null);
-        setTooltip(node ? { node: node.id, x: pointerRef.current.x, y: pointerRef.current.y } : null);
+        const p = pointerRef.current;
+        setHovered(node && p.inside ? node.id : null);
+        setTooltip(node && p.inside ? { node: node.id, x: p.x, y: p.y } : null);
         el.style.cursor = node ? 'pointer' : '';
       })
-      .onLinkHover((link) => setTooltip(link ? { edge: link.key, x: pointerRef.current.x, y: pointerRef.current.y } : null))
+      .onLinkHover((link) => {
+        const p = pointerRef.current;
+        setTooltip(link && p.inside ? { edge: link.key, x: p.x, y: p.y } : null);
+      })
       .onNodeClick((node) => select(node.id))
       .onEngineStop(() => fitOnce());
     const charge = fg.d3Force('charge') as unknown as { strength?: (v: number) => void } | undefined;
@@ -102,11 +106,18 @@ export default function Graph3D({ graph, ctx, positions, onReady }: Graph3DProps
     fgRef.current = fg;
     if (import.meta.env.DEV) (window as unknown as { __graph3d?: Instance }).__graph3d = fg;
 
+    // Tooltips need a real pointer position: none before the first move, none after leaving.
     const onMove = (e: PointerEvent): void => {
       const rect = el.getBoundingClientRect();
-      pointerRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      pointerRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top, inside: true };
+    };
+    const onLeave = (): void => {
+      pointerRef.current = { ...pointerRef.current, inside: false };
+      setTooltip(null);
+      setHovered(null);
     };
     el.addEventListener('pointermove', onMove);
+    el.addEventListener('pointerleave', onLeave);
     const observer = new ResizeObserver(() => fg.width(el.clientWidth).height(el.clientHeight));
     observer.observe(el);
     onReady({ fit: () => fg.zoomToFit(600, 40) });
@@ -115,6 +126,7 @@ export default function Graph3D({ graph, ctx, positions, onReady }: Graph3DProps
       onReady(null);
       observer.disconnect();
       el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerleave', onLeave);
       fg._destructor();
       fg.renderer().dispose();
       el.replaceChildren();
@@ -183,7 +195,7 @@ export default function Graph3D({ graph, ctx, positions, onReady }: Graph3DProps
         const hub = (style.derived.inbound.get(n.id) ?? 0) >= 6;
         let sprite = spritesRef.current.get(n.id);
         if (!sprite) {
-          sprite = new SpriteText(n.label, 4.2);
+          sprite = new SpriteText(n.label, 6);
           sprite.fontFace = 'system-ui, -apple-system, sans-serif';
           sprite.fontWeight = '600';
           sprite.strokeWidth = 0.6;
