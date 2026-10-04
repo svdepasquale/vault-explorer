@@ -25,7 +25,7 @@ vault (wiki/**.md + git) → src/core (parse) → VaultModel (src/shared) → sr
 
 ## Verify a change
 
-1. `npm run check` (typecheck both projects, 240 tests, build).
+1. `npm run check` (typecheck both projects, Node type-stripping smoke test, tests, build).
 2. Run it against the real vault, read-only: `npm run build && node src/server/main.ts --vault ~/projects/knowledge-vault --no-open` (or `npm run dev`), then look at it — Claude in Chrome when connected, otherwise headless Chrome over the DevTools protocol. Check dark and light.
 
 ## Gotchas (each one cost a debugging round)

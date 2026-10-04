@@ -12,7 +12,7 @@ Read-only, served on `127.0.0.1`, nothing resident: start it, look, Ctrl-C.
 | **Time travel** | Replays the vault growing: pages appear at their first commit, links on the day git first saw them written (dated from `git log -p`, renames followed). New pages are labelled while they are new. Works in 2D and 3D. |
 | **Timeline** | Commit calendar, cumulative pages by kind and links written, one lifeline per page (deleted pages included), and the commit feed (`<page>: what changed`) with filters. |
 | **Overview** | Headline numbers, the `hot.md` digest (open threads with clickable links), composition by kind / domain / status / tag, relations by predicate, hubs and outliers. |
-| **Health** | A visual lint: one-sided typed relations (the schema wants both pages to declare an edge that has an inverse), orphans, dead links, invalid YAML, missing fields, stale active pages, oversized pages, the `hot.md` byte budget. "Copy for Claude" puts the filtered list on the clipboard as a Markdown checklist. |
+| **Health** | A visual lint: one-sided typed relations (the schema wants both pages to declare an edge that has an inverse), orphans, dead links, invalid YAML, values cut short by an unquoted ` #` (a YAML comment), missing fields, stale active pages, oversized pages, the `hot.md` byte budget. "Copy for Claude" puts the filtered list on the clipboard as a Markdown checklist. |
 | **Recall** | Runs the vault's own `scripts/retrieve.py` — the same hybrid retrieval Claude uses — and shows the ranked chunks; "Show on graph" lights the hits up. |
 
 The page panel (any view) shows frontmatter, typed relations from that page's side (one-sided ones flagged), backlinks, links out, the rendered page with working `[[wikilinks]]`, and its git history. ⌘K searches pages.
@@ -55,7 +55,7 @@ Starting it again while it runs just reopens the browser on the running instance
 
 ```bash
 npm run dev     # server + Vite middleware with hot reload, http://127.0.0.1:7418/
-npm run check   # typecheck (server + SPA), 240 tests, production build
+npm run check   # typecheck (server + SPA), Node type-stripping smoke test, tests, production build
 ```
 
 ```

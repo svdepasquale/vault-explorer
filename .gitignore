@@ -16,4 +16,4 @@ dist/
 *.swp
 
 # Agent worktrees created by Claude Code
-.claude/
+.claude/worktrees/
