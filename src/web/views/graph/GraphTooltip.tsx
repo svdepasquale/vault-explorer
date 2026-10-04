@@ -1,4 +1,4 @@
-import { KIND_LABELS, PREDICATES } from '../../../shared/model.ts';
+import { isOneSided, KIND_LABELS, PREDICATES } from '../../../shared/model.ts';
 import type { Derived } from '../../app/derived.ts';
 import { daysAgo, formatDate, plural, shortLabel } from '../../app/format.ts';
 import type { VaultGraph } from './build.ts';
@@ -43,7 +43,7 @@ export function GraphTooltip({ tooltip, derived, graph }: { tooltip: TooltipStat
           <div key={`${r.from}${r.predicate}${r.to}`} className="graph-tooltip-relation">
             <span className="mono">{shortLabel(r.from)}</span> {PREDICATE.get(r.predicate)?.label ?? r.predicate}{' '}
             <span className="mono">{shortLabel(r.to)}</span>
-            {r.hasInverse && !(r.declaredOnFrom && r.declaredOnTo) && <span className="graph-tooltip-warn"> · one-sided</span>}
+            {isOneSided(r) && <span className="graph-tooltip-warn"> · one-sided</span>}
           </div>
         ))}
         {(attrs.body > 0 || attrs.related) && (

@@ -2,6 +2,7 @@ import { access, readdir, readFile, stat } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import {
   HOT_BUDGET_BYTES,
+  TYPED_RELATION_KINDS,
   type Commit,
   type CommitChange,
   type GhostPage,
@@ -194,6 +195,8 @@ export async function buildVaultModel(root: string, options: BuildOptions = {}):
           declaredOnTo: false,
           hasInverse: c.hasInverse,
           known: c.known,
+          expectedOnFrom: false,
+          expectedOnTo: false,
           since: null,
         };
         relationMap.set(key, rel);
@@ -201,6 +204,17 @@ export async function buildVaultModel(root: string, options: BuildOptions = {}):
       if (c.forward) rel.declaredOnFrom = true;
       else rel.declaredOnTo = true;
     }
+  }
+
+  // Only entity/source pages carry typed relations, so only they owe an inverse.
+  const kindOf = new Map(pages.map((p) => [p.id, p.kind]));
+  const typed = (id: string): boolean => {
+    const kind = kindOf.get(id);
+    return kind !== undefined && TYPED_RELATION_KINDS.includes(kind);
+  };
+  for (const rel of relationMap.values()) {
+    rel.expectedOnFrom = rel.hasInverse && typed(rel.from);
+    rel.expectedOnTo = rel.hasInverse && typed(rel.to);
   }
 
   // ── git history ──────────────────────────────────────────────────────────

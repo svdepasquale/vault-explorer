@@ -1,6 +1,6 @@
 import Graph from 'graphology';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
-import type { PageKind, Relation } from '../../../shared/model.ts';
+import { isOneSided, type PageKind, type Relation } from '../../../shared/model.ts';
 import type { Derived } from '../../app/derived.ts';
 import { shortLabel } from '../../app/format.ts';
 
@@ -114,7 +114,7 @@ export function buildGraph(derived: Derived): VaultGraph {
       predicates: [...new Set(pair.relations.map((r) => r.predicate))],
       body: pair.body,
       related: pair.related,
-      asymmetric: pair.relations.some((r) => r.hasInverse && !(r.declaredOnFrom && r.declaredOnTo)),
+      asymmetric: pair.relations.some(isOneSided),
       since,
       weight: (typed ? 2 : 0) + Math.log2(1 + pair.body) + (pair.related ? 0.5 : 0),
       size: typed ? 1.6 : 0.6 + 0.25 * Math.log2(1 + pair.body),

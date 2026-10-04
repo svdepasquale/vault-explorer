@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { HEALTH_CHECKS, PREDICATES, type Page, type Relation } from '../../shared/model.ts';
+import { HEALTH_CHECKS, isOneSided, PREDICATES, type Page, type Relation } from '../../shared/model.ts';
 import { api } from '../app/api.ts';
 import { useDerived, type Derived } from '../app/derived.ts';
 import { commitUrl, daysAgo, formatBytes, formatDate, formatNumber, plural, shortLabel } from '../app/format.ts';
@@ -26,7 +26,7 @@ function relationRows(page: Page, relations: Relation[]): [string, RelationRow[]
     const outgoing = r.from === page.id;
     const label = outgoing ? (def?.label ?? r.predicate) : (def?.inverseLabel ?? `← ${r.predicate}`);
     let oneSided: string | null = null;
-    if (r.hasInverse && !(r.declaredOnFrom && r.declaredOnTo)) {
+    if (isOneSided(r)) {
       oneSided = r.declaredOnFrom ? `declared only on ${r.from}` : `declared only on ${r.to}`;
     }
     const row = { label, other: outgoing ? r.to : r.from, oneSided };

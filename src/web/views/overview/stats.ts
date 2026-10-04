@@ -1,4 +1,5 @@
 import {
+  isOneSided,
   OVERSIZED_BYTES,
   PAGE_KINDS,
   PREDICATES,
@@ -98,7 +99,7 @@ function predicateStats(derived: Derived): PredicateStat[] {
     }
     stat.total++;
     if (!r.hasInverse) continue;
-    if (r.declaredOnFrom && r.declaredOnTo) {
+    if (!isOneSided(r)) {
       stat.twoSided++;
     } else {
       stat.oneSided++;
@@ -127,7 +128,7 @@ export function computeStats(derived: Derived): OverviewStats {
   for (const r of model.relations) {
     if (!r.known) unknownPredicates++;
     if (!r.hasInverse) noInverse++;
-    else if (r.declaredOnFrom && r.declaredOnTo) twoSided++;
+    else if (!isOneSided(r)) twoSided++;
     else oneSided++;
   }
 

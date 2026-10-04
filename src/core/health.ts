@@ -1,5 +1,6 @@
 import {
   OVERSIZED_BYTES,
+  isOneSided,
   STALE_DAYS,
   STALE_STATUSES,
   type HealthIssue,
@@ -114,10 +115,10 @@ export function computeHealth(input: HealthInput): HealthIssue[] {
       });
       continue;
     }
-    if (!r.hasInverse || (r.declaredOnFrom && r.declaredOnTo)) continue;
+    if (!isOneSided(r)) continue;
     const def = predicateDef(r.predicate);
     if (!def?.inverse) continue;
-    if (r.declaredOnFrom) {
+    if (r.expectedOnTo && !r.declaredOnTo) {
       issues.push({
         check: 'relation-asymmetric',
         severity: 'warning',

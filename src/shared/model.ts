@@ -128,8 +128,24 @@ export interface Relation {
   hasInverse: boolean;
   /** The predicate is part of the schema. */
   known: boolean;
+  /** The schema wants `from` to declare it: the predicate has an inverse and `from` is an entity/source page. */
+  expectedOnFrom: boolean;
+  /** The schema wants `to` to declare the inverse: same rule on the `to` page. */
+  expectedOnTo: boolean;
   /** ISO date-time of the first commit declaring it on either page; null when git cannot tell. */
   since: string | null;
+}
+
+/**
+ * Kinds whose pages carry a typed `relations:` block (vault schema). Meta, profile,
+ * runbook and navigation pages use `related:`, so they are never expected to declare
+ * an inverse.
+ */
+export const TYPED_RELATION_KINDS: readonly PageKind[] = ['entity', 'source'];
+
+/** A relation the schema wants declared on a page that does not declare it. */
+export function isOneSided(r: Relation): boolean {
+  return (r.expectedOnFrom && !r.declaredOnFrom) || (r.expectedOnTo && !r.declaredOnTo);
 }
 
 export interface Unresolved {
@@ -176,7 +192,7 @@ export const HEALTH_CHECKS = {
   'link-unresolved': { label: 'Dead wikilink', description: 'A body wikilink points to no page.' },
   'link-ambiguous': { label: 'Ambiguous wikilink', description: 'A bare wikilink matches several pages; the closest one was picked.' },
   'relation-unresolved': { label: 'Dead relation', description: 'A typed relation points to no page.' },
-  'relation-asymmetric': { label: 'One-sided relation', description: 'A predicate with an inverse is declared on one page only; the schema wants both.' },
+  'relation-asymmetric': { label: 'One-sided relation', description: 'A predicate with an inverse is declared on one entity/source page only; the schema wants both (meta, profile, runbook and navigation pages use related: instead).' },
   'relation-unknown-predicate': { label: 'Unknown predicate', description: 'The relations block uses a predicate outside the schema.' },
   'related-deprecated': { label: 'related: on entity/source', description: 'Entity and source pages use typed relations:, not related:.' },
   orphan: { label: 'Orphan', description: 'No page links here except navigation pages.' },

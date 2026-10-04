@@ -25,6 +25,8 @@ function relation(from: string, predicate: string, to: string, declaredOn: 'from
     declaredOnTo: declaredOn !== 'from',
     hasInverse: c.hasInverse,
     known: c.known,
+    expectedOnFrom: c.hasInverse,
+    expectedOnTo: c.hasInverse,
     since: null,
   };
 }

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { isOneSided } from '../src/shared/model.ts';
 import { canonicalize, predicateDef, readLinkList, readRelations } from '../src/core/relations.ts';
 import { PREDICATES } from '../src/shared/model.ts';
 
@@ -94,5 +95,19 @@ describe('readRelations', () => {
     ['a list', ['[[beta]]']],
   ])('returns nothing for %s', (_label, value) => {
     expect(readRelations(value)).toEqual([]);
+  });
+});
+
+describe('isOneSided', () => {
+  const base = { from: 'entities/a', predicate: 'references', to: 'meta/profile/p', hasInverse: true, known: true, since: null };
+
+  it('does not expect an inverse on a page that uses related: (meta, profile, runbook, nav)', () => {
+    expect(isOneSided({ ...base, declaredOnFrom: true, declaredOnTo: false, expectedOnFrom: true, expectedOnTo: false })).toBe(false);
+  });
+
+  it('flags the missing side when both pages carry typed relations', () => {
+    expect(isOneSided({ ...base, declaredOnFrom: true, declaredOnTo: false, expectedOnFrom: true, expectedOnTo: true })).toBe(true);
+    expect(isOneSided({ ...base, declaredOnFrom: false, declaredOnTo: true, expectedOnFrom: true, expectedOnTo: true })).toBe(true);
+    expect(isOneSided({ ...base, declaredOnFrom: true, declaredOnTo: true, expectedOnFrom: true, expectedOnTo: true })).toBe(false);
   });
 });

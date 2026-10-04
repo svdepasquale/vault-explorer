@@ -1,6 +1,6 @@
 // Pure helpers for the Health view: grouping, filtering, the checklist handed
 // to Claude and the per-predicate symmetry of typed relations.
-import { HEALTH_CHECKS, PREDICATES, type HealthCheck, type HealthIssue, type Relation, type Severity } from '../../../shared/model.ts';
+import { isOneSided, HEALTH_CHECKS, PREDICATES, type HealthCheck, type HealthIssue, type Relation, type Severity } from '../../../shared/model.ts';
 
 export const SEVERITIES: readonly Severity[] = ['error', 'warning', 'info'];
 const SEVERITY_RANK: Record<Severity, number> = { error: 0, warning: 1, info: 2 };
@@ -133,7 +133,8 @@ export function relationSymmetry(relations: readonly Relation[]): Symmetry {
     }
     const row: SymmetryRow = { predicate: def.name, inverse: def.inverse, total: list.length, both: 0, forwardOnly: 0, inverseOnly: 0 };
     for (const r of list) {
-      if (r.declaredOnFrom && r.declaredOnTo) row.both++;
+      // Complete when every page the schema expects to declare it does (see isOneSided).
+      if (!isOneSided(r)) row.both++;
       else if (r.declaredOnFrom) row.forwardOnly++;
       else row.inverseOnly++;
     }

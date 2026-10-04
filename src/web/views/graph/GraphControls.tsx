@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PREDICATES } from '../../../shared/model.ts';
+import { isOneSided, PREDICATES } from '../../../shared/model.ts';
 import { useDerived } from '../../app/derived.ts';
 import { formatNumber } from '../../app/format.ts';
 import { useStore, type ColorMode, type EmphasisField } from '../../app/store.ts';
@@ -37,7 +37,7 @@ export function GraphControls({
   const values =
     settings.emphasis.field === 'domain' ? derived.domains : settings.emphasis.field === 'status' ? derived.statuses : derived.tags;
   const usedPredicates = new Set(derived.model.relations.map((r) => r.predicate));
-  const asymmetric = derived.model.relations.filter((r) => r.hasInverse && !(r.declaredOnFrom && r.declaredOnTo)).length;
+  const asymmetric = derived.model.relations.filter(isOneSided).length;
 
   return (
     <div className={`graph-controls card${collapsed ? ' collapsed' : ''}`}>

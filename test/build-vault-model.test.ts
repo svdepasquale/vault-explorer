@@ -236,12 +236,12 @@ describe('buildVaultModel — fixture vault with git history', () => {
   it('merges typed relations in canonical direction across both pages', () => {
     const shape = model.relations.map(({ since: _since, ...r }) => r).sort((a, b) => relationKey(a).localeCompare(relationKey(b)));
     expect(shape).toEqual([
-      { from: 'entities/alpha', predicate: 'documented_in', to: 'sources/gamma', declaredOnFrom: false, declaredOnTo: true, hasInverse: true, known: true },
-      { from: 'entities/alpha', predicate: 'hosted_on', to: 'entities/beta', declaredOnFrom: true, declaredOnTo: true, hasInverse: true, known: true },
-      { from: 'entities/beta', predicate: 'depends_on', to: 'sources/gamma', declaredOnFrom: true, declaredOnTo: false, hasInverse: false, known: true },
-      { from: 'meta/broken-yaml', predicate: 'depends_on', to: 'sources/gamma', declaredOnFrom: true, declaredOnTo: false, hasInverse: false, known: true },
-      { from: 'meta/broken-yaml', predicate: 'part_of', to: 'entities/alpha', declaredOnFrom: true, declaredOnTo: false, hasInverse: false, known: true },
-      { from: 'runbooks/rotate', predicate: 'inspired_by', to: 'sources/gamma', declaredOnFrom: true, declaredOnTo: false, hasInverse: false, known: false },
+      { from: 'entities/alpha', predicate: 'documented_in', to: 'sources/gamma', declaredOnFrom: false, declaredOnTo: true, hasInverse: true, known: true, expectedOnFrom: true, expectedOnTo: true },
+      { from: 'entities/alpha', predicate: 'hosted_on', to: 'entities/beta', declaredOnFrom: true, declaredOnTo: true, hasInverse: true, known: true, expectedOnFrom: true, expectedOnTo: true },
+      { from: 'entities/beta', predicate: 'depends_on', to: 'sources/gamma', declaredOnFrom: true, declaredOnTo: false, hasInverse: false, known: true, expectedOnFrom: false, expectedOnTo: false },
+      { from: 'meta/broken-yaml', predicate: 'depends_on', to: 'sources/gamma', declaredOnFrom: true, declaredOnTo: false, hasInverse: false, known: true, expectedOnFrom: false, expectedOnTo: false },
+      { from: 'meta/broken-yaml', predicate: 'part_of', to: 'entities/alpha', declaredOnFrom: true, declaredOnTo: false, hasInverse: false, known: true, expectedOnFrom: false, expectedOnTo: false },
+      { from: 'runbooks/rotate', predicate: 'inspired_by', to: 'sources/gamma', declaredOnFrom: true, declaredOnTo: false, hasInverse: false, known: false, expectedOnFrom: false, expectedOnTo: false },
     ]);
   });
 
