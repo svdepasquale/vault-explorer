@@ -59,12 +59,13 @@ export function computeVisible(
 ): Set<string> {
   const visible = new Set<string>();
   for (const page of derived.model.pages) {
-    if (settings.hiddenKinds.includes(page.kind)) continue;
-    if (!page.indexed && !settings.showArchived && page.kind !== 'nav') continue;
     if (time !== null) {
       const born = derived.bornAt(page);
       if (born !== null && born > time) continue;
     }
+    // The focused page itself passes the kind/archive filters (its neighbours do not).
+    const filtered = settings.hiddenKinds.includes(page.kind) || (!page.indexed && !settings.showArchived && page.kind !== 'nav');
+    if (filtered && !(settings.focusDepth > 0 && page.id === selected)) continue;
     visible.add(page.id);
   }
   if (!selected || settings.focusDepth <= 0 || !visible.has(selected)) return visible;

@@ -60,6 +60,9 @@ export default function GraphView() {
     [derived, settings, selected, highlight, palette, time, visible],
   );
 
+  // Focus only applies when the selected page is on the graph (not before its birth in time travel).
+  const focusApplied = settings.focusDepth > 0 && !!selected && visible.has(selected);
+
   const visibleEdges = useMemo(() => {
     if (!graph) return 0;
     return graph.filterEdges((_e, attrs, s, t) => {
@@ -112,7 +115,7 @@ export default function GraphView() {
           </button>
         </div>
       )}
-      {settings.focusDepth > 0 && selected && !highlight && (
+      {focusApplied && selected && !highlight && (
         <div className="graph-banner" role="status">
           <span>
             Focus: {settings.focusDepth}-hop neighbourhood of <strong>{shortLabel(selected)}</strong>
@@ -122,7 +125,7 @@ export default function GraphView() {
           </button>
         </div>
       )}
-      {time !== null && !highlight && !(settings.focusDepth > 0 && selected) && (
+      {time !== null && !highlight && !focusApplied && (
         <div className="graph-banner" role="status">
           <span>
             The vault as of <strong>{formatDate(new Date(time).toISOString())}</strong> — new pages are labelled

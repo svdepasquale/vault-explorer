@@ -55,6 +55,8 @@ function drawHover(context: CanvasRenderingContext2D, data: LabelData & { color:
 }
 
 const FONT = 'system-ui, -apple-system, sans-serif';
+/** Sigma's double-click window, and how long a single click waits before opening the panel. */
+const DOUBLE_CLICK_MS = 300;
 
 export interface Sigma2DProps {
   graph: VaultGraph;
@@ -76,6 +78,7 @@ export function Sigma2D({ graph, ctx, positions, onPositionsChange, layoutTick, 
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const styleRef = useRef<StyleContext>({ ...ctx, hovered });
   styleRef.current = { ...ctx, hovered };
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const positionsRef = useRef({ positions, onPositionsChange });
   positionsRef.current = { positions, onPositionsChange };
 
@@ -100,6 +103,7 @@ export function Sigma2D({ graph, ctx, positions, onPositionsChange, layoutTick, 
       labelDensity: 0.55,
       labelGridCellSize: 110,
       labelRenderedSizeThreshold: 8,
+      doubleClickTimeout: DOUBLE_CLICK_MS,
       minCameraRatio: 0.05,
       maxCameraRatio: 4,
       stagePadding: 48,
@@ -141,14 +145,20 @@ export function Sigma2D({ graph, ctx, positions, onPositionsChange, layoutTick, 
     sigmaRef.current = sigma;
     onReady({ fit: () => void sigma.getCamera().animatedReset({ duration: 350 }) });
 
-    // Drag a node to move it; the new spot is remembered with the layout.
+    // Drag a node to move it; the new spot is remembered with the layout. A real drag
+    // (past a few pixels of trackpad jitter) does not count as a click on the node.
     let dragged: string | null = null;
+    let dragMoved = false;
+    let downAt = { x: 0, y: 0 };
     sigma.on('downNode', (e) => {
       dragged = e.node;
+      dragMoved = false;
+      downAt = { x: e.event.x, y: e.event.y };
       if (!sigma.getCustomBBox()) sigma.setCustomBBox(sigma.getBBox());
     });
     sigma.getMouseCaptor().on('mousemovebody', (e) => {
       if (!dragged) return;
+      if (!dragMoved && Math.hypot(e.x - downAt.x, e.y - downAt.y) > 4) dragMoved = true;
       const pos = sigma.viewportToGraph(e);
       graphRef.current.mergeNodeAttributes(dragged, { x: pos.x, y: pos.y });
       positionsRef.current.positions.set(dragged, { x: pos.x, y: pos.y });
@@ -171,8 +181,19 @@ export function Sigma2D({ graph, ctx, positions, onPositionsChange, layoutTick, 
     });
     sigma.on('enterEdge', (e) => setTooltip({ edge: e.edge, x: e.event.x, y: e.event.y }));
     sigma.on('leaveEdge', () => setTooltip(null));
-    sigma.on('clickNode', (e) => select(e.node));
+    // A click opens the page panel only once the double-click window has passed: opening it
+    // at once narrows the canvas, and the second click of a double-click would miss the node.
+    sigma.on('clickNode', (e) => {
+      if (dragMoved) {
+        dragMoved = false;
+        return;
+      }
+      if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+      const node = e.node;
+      clickTimerRef.current = setTimeout(() => select(node), DOUBLE_CLICK_MS);
+    });
     sigma.on('doubleClickNode', (e) => {
+      if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
       e.preventSigmaDefault();
       select(e.node);
       updateGraph({ focusDepth: 1 });
@@ -181,6 +202,7 @@ export function Sigma2D({ graph, ctx, positions, onPositionsChange, layoutTick, 
 
   useEffect(
     () => () => {
+      if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
       onReady(null);
       sigmaRef.current?.kill();
       sigmaRef.current = null;
@@ -214,13 +236,20 @@ export function Sigma2D({ graph, ctx, positions, onPositionsChange, layoutTick, 
   }, [layoutTick]);
 
   // Frame the focus neighbourhood or the recall hits; reset once when leaving that mode.
+  // Keyed on the framed ids, so display-only setting changes keep the user's zoom.
   const framedRef = useRef(false);
   const { highlight, selected, visible } = ctx;
   const focusDepth = ctx.settings.focusDepth;
+  const framedIds = highlight
+    ? Object.keys(highlight.ranks).filter((id) => visible.has(id))
+    : focusDepth > 0 && selected && visible.has(selected)
+      ? [...visible]
+      : null;
+  const framedKey = framedIds ? [...framedIds].sort().join('\n') : null;
   useEffect(() => {
     const sigma = sigmaRef.current;
     if (!sigma) return;
-    const ids = highlight ? Object.keys(highlight.ranks).filter((id) => visible.has(id)) : focusDepth > 0 && selected ? [...visible] : null;
+    const ids = framedIds;
     if (!ids) {
       if (framedRef.current) {
         framedRef.current = false;
@@ -244,7 +273,8 @@ export function Sigma2D({ graph, ctx, positions, onPositionsChange, layoutTick, 
     framedRef.current = true;
     const ratio = Math.min(1.2, Math.max(0.12, Math.max(maxX - minX, maxY - minY) * 1.35));
     void sigma.getCamera().animate({ x: (minX + maxX) / 2, y: (minY + maxY) / 2, ratio }, { duration: 400 });
-  }, [highlight, focusDepth, selected, visible]);
+    // framedIds is read from the render that changed framedKey.
+  }, [framedKey]);
 
   // A page selected elsewhere (search, panel links) is brought into view if it is off-screen.
   useEffect(() => {
