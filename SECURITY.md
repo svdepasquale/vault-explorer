@@ -4,10 +4,7 @@
 
 If you discover a security vulnerability in vault-explorer, please **do not** open a public GitHub issue.
 
-Instead, report it privately via one of:
-
-- GitHub Security Advisories: [create a private advisory](https://github.com/svdepasquale/vault-explorer/security/advisories/new)
-- Email: `silvio.depasquale@pm.me`
+Instead, report it privately by email: `silvio.depasquale@pm.me` (the repository is private, so GitHub's private advisories are not available for it).
 
 Please include:
 
@@ -38,6 +35,8 @@ Out of scope:
 - Vulnerabilities in third-party dependencies with no exploitable path in vault-explorer — report those upstream
 
 ## What the server is meant to guarantee
+
+These hold for the built app (`npm start`). Under `npm run dev` the UI is served by Vite middleware behind the same Host guard, with CORS off, and Vite also serves the repository's own sources.
 
 - It listens on `127.0.0.1` only and sends no CORS headers.
 - It answers only requests addressed to `127.0.0.1`, `localhost` or `[::1]` on its own port.

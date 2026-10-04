@@ -144,7 +144,8 @@ export function computeStats(derived: Derived): OverviewStats {
     .sort((a, b) => b.value - a.value || a.page.id.localeCompare(b.page.id))
     .slice(0, TOP);
 
-  const activeLike = pages.filter((p) => p.status !== null && STALE_STATUSES.includes(p.status));
+  // Same scope as the stale check: archived pages (index: false) are exempt.
+  const activeLike = pages.filter((p) => p.indexed && p.status !== null && STALE_STATUSES.includes(p.status));
   const aged = activeLike.flatMap((page) => {
     const age = derived.ageDays(page);
     // The stale badge is the server's health verdict, so both views always agree.

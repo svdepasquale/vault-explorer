@@ -175,7 +175,9 @@ export function IssueList({
   };
 
   const showOnGraph = (id: string): void => {
-    updateGraph({ showAsymmetric: true, focusDepth: 1 });
+    // A predicate filter or a recall lens left from another view would hide the edge.
+    updateGraph({ showAsymmetric: true, showRelations: true, focusDepth: 1, predicate: null });
+    useStore.getState().setHighlight(null);
     useStore.getState().setTimeCursor(null);
     select(id);
     setView('graph');

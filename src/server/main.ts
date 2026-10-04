@@ -128,7 +128,8 @@ async function main(): Promise<void> {
     const { createServer: createViteServer } = await import('vite');
     vite = await createViteServer({
       configFile: `${REPO_ROOT}vite.config.ts`,
-      server: { middlewareMode: true, hmr: { server } },
+      // cors: false keeps --dev as closed as the built app (Vite would allow any origin).
+      server: { middlewareMode: true, hmr: { server }, cors: false },
       appType: 'spa',
     });
     options.devMiddleware = vite.middlewares;

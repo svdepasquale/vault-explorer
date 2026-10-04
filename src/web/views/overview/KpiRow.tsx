@@ -88,9 +88,9 @@ export function KpiRow({ stats, hot }: { stats: OverviewStats; hot: HotSummary |
         {stats.notIndexed > 0 && <p className="overview-kpi-muted">{formatNumber(stats.notIndexed)} not indexed for retrieval</p>}
       </Tile>
 
-      <Tile label="Wikilinks" value={formatNumber(stats.linkPairs)} unit="page pairs">
+      <Tile label="Wikilinks" value={formatNumber(stats.linkPairs)} unit="one-way links">
         <p>{formatNumber(stats.bodyRefs)} body references</p>
-        {stats.relatedPairs > 0 && <p className="overview-kpi-muted">{formatNumber(stats.relatedPairs)} pairs in related:</p>}
+        {stats.relatedPairs > 0 && <p className="overview-kpi-muted">{formatNumber(stats.relatedPairs)} links in related:</p>}
       </Tile>
 
       <Tile label="Typed relations" value={formatNumber(stats.relations)}>
