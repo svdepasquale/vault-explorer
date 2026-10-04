@@ -154,7 +154,8 @@ export const useStore = create<AppState>((set, get) => ({
   applyStatus: async (status) => {
     const previousVault = get().status?.vault ?? null;
     set({ status });
-    if (status.vault !== previousVault) set({ selected: null, highlight: null, timeCursor: null });
+    // Only a real switch resets: the first status after a reload must keep a ?page= deep link.
+    if (previousVault !== null && status.vault !== previousVault) set({ selected: null, highlight: null, timeCursor: null });
     if (!status.ready) {
       set({ model: null, loadError: status.error });
       return;

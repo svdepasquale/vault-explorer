@@ -42,6 +42,13 @@ function hash01(text: string): number {
 
 const endpoint = (end: string | Node3D): string => (typeof end === 'string' ? end : end.id);
 
+/** Put the camera 110 units out from a node, looking at it. */
+function flyTo(fg: Instance, node: Node3D): void {
+  if (node.x === undefined || node.y === undefined || node.z === undefined) return;
+  const ratio = 1 + 110 / Math.max(1, Math.hypot(node.x, node.y, node.z));
+  fg.cameraPosition({ x: node.x * ratio, y: node.y * ratio, z: node.z * ratio }, { x: node.x, y: node.y, z: node.z }, 900);
+}
+
 export interface Graph3DProps {
   graph: VaultGraph;
   ctx: Omit<StyleContext, 'hovered'>;
@@ -58,22 +65,42 @@ export default function Graph3D({ graph, ctx, positions, onReady }: Graph3DProps
   const spritesRef = useRef(new Map<string, SpriteText>());
   const pointerRef = useRef({ x: 0, y: 0, inside: false });
   const fittedRef = useRef(false);
+  const membershipRef = useRef<{ graph: VaultGraph | null; key: string }>({ graph: null, key: '' });
   const [hovered, setHovered] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const styleRef = useRef<StyleContext>({ ...ctx, hovered });
   styleRef.current = { ...ctx, hovered };
 
-  // One instance for the lifetime of the view.
+  // Update a label in place from the current look; SpriteText redraws its canvas on every
+  // assignment, so only changed fields are written.
+  const styleSprite = (sprite: SpriteText, n: Node3D): void => {
+    const style = styleRef.current;
+    const page = style.derived.pageById.get(n.id);
+    const look = page ? nodeLook(page, style) : null;
+    const hub = (style.derived.inbound.get(n.id) ?? 0) >= 6;
+    const text = `${look?.labelPrefix ?? ''}${n.label}`;
+    const color = look?.forceLabel ? style.palette.ink : style.palette.ink2;
+    if (sprite.text !== text) sprite.text = text;
+    if (sprite.color !== color) sprite.color = color;
+    if (sprite.strokeColor !== style.palette.surface) sprite.strokeColor = style.palette.surface;
+    sprite.visible = !!look && !look.dimmed && (look.forceLabel || hub);
+    sprite.position.set(0, Math.cbrt((n.size + (look?.sizeBoost ?? 0)) ** 3 / 60) * 1.6 + 4, 0);
+  };
+
+  // One instance for the lifetime of the view; per-node objects are built once.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     const fg = new ForceGraph3D(el, { controlType: 'orbit' }) as unknown as Instance;
-    // Frame the graph once, early (positions are seeded from the 2D map, so the warm-up
-    // is already close to the final shape); later updates keep the user's camera.
+    // Frame once, early (positions are seeded from the 2D map, so the warm-up is already
+    // close to the final shape): on the selected page if there is one, else the whole graph.
     const fitOnce = (): void => {
       if (fittedRef.current || fg.graphData().nodes.length === 0) return;
       fittedRef.current = true;
-      fg.zoomToFit(600, 24);
+      const id = styleRef.current.selected;
+      const node = id ? nodesRef.current.get(id) : undefined;
+      if (node) flyTo(fg, node);
+      else fg.zoomToFit(600, 24);
     };
     const fitTimer = setTimeout(fitOnce, 700);
     fg.showNavInfo(false)
@@ -82,7 +109,25 @@ export default function Graph3D({ graph, ctx, positions, onReady }: Graph3DProps
       .nodeResolution(14)
       .nodeOpacity(0.95)
       .nodeLabel(() => '')
+      .nodeThreeObjectExtend(true)
+      .nodeThreeObject((n) => {
+        let sprite = spritesRef.current.get(n.id);
+        if (!sprite) {
+          sprite = new SpriteText(n.label, 6);
+          sprite.fontFace = 'system-ui, -apple-system, sans-serif';
+          sprite.fontWeight = '600';
+          sprite.strokeWidth = 0.6;
+          sprite.material.depthWrite = false;
+          // Labels are decoration: never a hover, click or drag target (hidden ones included).
+          sprite.raycast = () => {};
+          spritesRef.current.set(n.id, sprite);
+        }
+        styleSprite(sprite, n);
+        return sprite;
+      })
       .linkOpacity(0.55)
+      .linkWidth((l) => (l.typed ? 0.55 : 0))
+      .linkDirectionalArrowLength((l) => (l.typed ? 3.2 : 0))
       .linkDirectionalArrowRelPos(1)
       .enableNodeDrag(true)
       .warmupTicks(40)
@@ -132,10 +177,12 @@ export default function Graph3D({ graph, ctx, positions, onReady }: Graph3DProps
       el.replaceChildren();
       fgRef.current = null;
     };
+    // styleSprite only reads refs, so it is safe to leave out of the deps.
   }, [select, onReady]);
 
   // Membership: pages and edges alive under the filters and the time cursor. Node objects are
-  // reused, so the simulation keeps its state and newcomers fly in during time travel.
+  // reused, so the simulation keeps its state and newcomers fly in during time travel. The
+  // simulation is only re-fed when membership really changed: graphData() always reheats it.
   useEffect(() => {
     const fg = fgRef.current;
     if (!fg) return;
@@ -168,11 +215,14 @@ export default function Graph3D({ graph, ctx, positions, onReady }: Graph3DProps
       if (!v.typed && !v.body) return;
       links.push({ key, source, target, attrs, typed: v.typed });
     });
+    const key = `${nodes.map((n) => n.id).join('\n')}\u0000${links.map((l) => `${l.key}:${l.typed ? 1 : 0}`).join('\n')}`;
+    if (membershipRef.current.graph === graph && membershipRef.current.key === key) return;
+    membershipRef.current = { graph, key };
     fg.graphData({ nodes, links });
   }, [graph, ctx.visible, ctx.settings, ctx.time, positions]);
 
-  // Looks: colors, sizes, labels, arrows. Re-applying the accessors repaints without
-  // touching the simulation.
+  // Looks: colors, sizes, edge colors, labels. Accessor updates repaint existing objects;
+  // labels are updated in place.
   useEffect(() => {
     const fg = fgRef.current;
     if (!fg) return;
@@ -188,41 +238,20 @@ export default function Graph3D({ graph, ctx, positions, onReady }: Graph3DProps
         const page = pageOf(n.id);
         return page ? nodeLook(page, style).color : style.palette.ink3;
       })
-      .nodeThreeObjectExtend(true)
-      .nodeThreeObject((n) => {
-        const page = pageOf(n.id);
-        const look = page ? nodeLook(page, style) : null;
-        const hub = (style.derived.inbound.get(n.id) ?? 0) >= 6;
-        let sprite = spritesRef.current.get(n.id);
-        if (!sprite) {
-          sprite = new SpriteText(n.label, 6);
-          sprite.fontFace = 'system-ui, -apple-system, sans-serif';
-          sprite.fontWeight = '600';
-          sprite.strokeWidth = 0.6;
-          sprite.material.depthWrite = false;
-          spritesRef.current.set(n.id, sprite);
-        }
-        sprite.text = `${look?.labelPrefix ?? ''}${n.label}`;
-        sprite.color = look?.forceLabel ? style.palette.ink : style.palette.ink2;
-        sprite.strokeColor = style.palette.surface;
-        sprite.visible = !!look && !look.dimmed && (look.forceLabel || hub);
-        sprite.position.set(0, Math.cbrt((n.size + (look?.sizeBoost ?? 0)) ** 3 / 60) * 1.6 + 4, 0);
-        return sprite;
-      })
       .linkColor((l) => edgeColor(l.attrs, l.typed, endpoint(l.source), endpoint(l.target), style).color)
-      .linkWidth((l) => (l.typed ? 0.55 : 0))
-      .linkDirectionalArrowLength((l) => (l.typed ? 3.2 : 0))
       .linkDirectionalArrowColor((l) => edgeColor(l.attrs, l.typed, endpoint(l.source), endpoint(l.target), style).color);
+    for (const n of fg.graphData().nodes) {
+      const sprite = spritesRef.current.get(n.id);
+      if (sprite) styleSprite(sprite, n);
+    }
   }, [ctx, hovered]);
 
-  // Fly to the selected page.
+  // Fly to a page selected after the opening frame (the opening frame handles the first one).
   useEffect(() => {
     const fg = fgRef.current;
     const node = ctx.selected ? nodesRef.current.get(ctx.selected) : undefined;
-    if (!fg || !node || node.x === undefined || node.y === undefined || node.z === undefined) return;
-    const distance = 110;
-    const ratio = 1 + distance / Math.max(1, Math.hypot(node.x, node.y, node.z));
-    fg.cameraPosition({ x: node.x * ratio, y: node.y * ratio, z: node.z * ratio }, { x: node.x, y: node.y, z: node.z }, 900);
+    if (!fg || !node || !fittedRef.current) return;
+    flyTo(fg, node);
   }, [ctx.selected]);
 
   return (

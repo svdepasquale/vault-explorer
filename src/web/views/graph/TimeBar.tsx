@@ -42,6 +42,11 @@ export function TimeBar({ visibleNodes, visibleEdges }: { visibleNodes: number; 
     let lastEmit = 0;
     let cursor = useStore.getState().timeCursor ?? rangeRef.current?.[0] ?? 0;
     const tick = (now: number): void => {
+      // Something else (Focus in graph, a vault switch) cleared the cursor: stop, do not overwrite it.
+      if (useStore.getState().timeCursor === null) {
+        setPlaying(false);
+        return;
+      }
       const r = rangeRef.current;
       if (!r) return;
       const dt = now - last;
