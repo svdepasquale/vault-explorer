@@ -172,7 +172,13 @@ export function createHandler(options: HandlerOptions): (req: IncomingMessage, r
 
       case 'POST /api/recall': {
         if (!service.vault || !service.model) return fail(res, 503, 'No vault selected', 'no-vault');
-        if (!service.model.vault.capabilities.recall) return fail(res, 501, 'This vault has no scripts/retrieve.py', 'unsupported');
+        if (!service.model.vault.capabilities.recall)
+          return fail(
+            res,
+            501,
+            "No retrieve.py found for this vault (vault-engine next to it, VAULT_ENGINE, or the vault's scripts/)",
+            'unsupported',
+          );
         const body = await readJson(req);
         const query = typeof body['query'] === 'string' ? body['query'].trim() : '';
         const top = Math.min(20, Math.max(1, Math.trunc(Number(body['top'] ?? 8)) || 8));

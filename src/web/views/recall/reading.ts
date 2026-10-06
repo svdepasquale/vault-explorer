@@ -187,7 +187,7 @@ export function errorCopy(code: string): ErrorCopy {
     case 'unsupported':
       return {
         title: 'This vault has no retrieval script',
-        hint: 'Recall runs the vault’s own scripts/retrieve.py, and this vault does not have one. The other views work as usual.',
+        hint: 'Recall runs scripts/retrieve.py from a vault-engine checkout next to the vault (or VAULT_ENGINE, or the vault’s own scripts/), and none was found. The other views work as usual.',
       };
     case 'timeout':
       return {

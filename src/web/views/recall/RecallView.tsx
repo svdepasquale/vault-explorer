@@ -143,8 +143,9 @@ export default function RecallView() {
               <div>
                 <p className="recall-callout-title">Recall is not available for this vault</p>
                 <p>
-                  It runs the vault’s own <code>scripts/retrieve.py</code>, and this vault has none, so there is nothing to run. The other
-                  views work as usual.
+                  It runs <code>scripts/retrieve.py</code> from a <code>vault-engine</code> checkout next to the vault (or{' '}
+                  <code>VAULT_ENGINE</code>, or the vault’s own <code>scripts/</code>), and none was found, so there is nothing to run. The
+                  other views work as usual.
                 </p>
               </div>
             </div>
@@ -155,10 +156,10 @@ export default function RecallView() {
 
           <footer className="recall-foot">
             <p>
-              <strong>How this works.</strong> Recall runs the vault’s own <code>scripts/retrieve.py</code>, the same script Claude calls,
-              locally on this machine, with the question passed over stdin. BM25 shortlists chunks by keyword, then local embedding models
-              re-rank them by meaning. Like any Claude query, a run may update the vault’s untracked embedding cache under{' '}
-              <code>.vault-meta/</code>; nothing under <code>wiki/</code> is written.
+              <strong>How this works.</strong> Recall runs the vault’s <code>scripts/retrieve.py</code> (from <code>vault-engine</code>),
+              the same script Claude calls, locally on this machine, with the question passed over stdin. BM25 shortlists chunks by keyword,
+              then local embedding models re-rank them by meaning. Like any Claude query, a run may update the vault’s untracked embedding
+              cache under <code>.vault-meta/</code>; nothing under <code>wiki/</code> is written.
             </p>
           </footer>
         </div>

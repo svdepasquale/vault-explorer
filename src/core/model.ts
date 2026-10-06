@@ -1,5 +1,5 @@
 import type { Stats } from 'node:fs';
-import { access, readdir, readFile, stat } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import {
   HOT_BUDGET_BYTES,
@@ -18,6 +18,7 @@ import {
 import { asString, asStringList, normalizeDate, readFrontmatter } from './frontmatter.ts';
 import { readHistory, readLinkHistory, readRepoInfo, type RawCommit } from './git.ts';
 import { computeHealth } from './health.ts';
+import { findRetrieve } from './retrieval.ts';
 import { countWords, extractWikilinks, readSections, stripCode } from './markdown.ts';
 import { canonicalize, readLinkList, readRelations } from './relations.ts';
 import { createResolver } from '../shared/resolve.ts';
@@ -263,13 +264,7 @@ export async function buildVaultModel(root: string, options: BuildOptions = {}):
   const relations = [...relationMap.values()];
   const health = computeHealth({ pages, links, relations, unresolved, ambiguous, hot, missingFrontmatter, now });
 
-  let recall = false;
-  try {
-    await access(join(root, 'scripts', 'retrieve.py'));
-    recall = true;
-  } catch {
-    recall = false;
-  }
+  const recall = (await findRetrieve(root)) !== null;
 
   return {
     schema: 1,

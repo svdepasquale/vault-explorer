@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { join } from 'node:path';
+import { findRetrieve } from '../core/retrieval.ts';
 import type { RecallCandidate, RecallResponse } from '../shared/model.ts';
 
 const TIMEOUT_MS = 90_000;
@@ -23,18 +23,22 @@ function pageIdOf(path: string): string | null {
 }
 
 /**
- * Run the vault's own hybrid retrieval (`scripts/retrieve.py`), the same call
+ * Run the vault's hybrid retrieval (`scripts/retrieve.py` in vault-engine, or in the vault itself), the same call
  * Claude makes. The query goes over stdin, never argv. Side effects are the
  * script's own: it may embed new chunks into its untracked cache under
  * `.vault-meta/` and take its lock files; nothing under `wiki/` is touched.
  */
-export function runRecall(vault: string, query: string, top: number): Promise<RecallResponse> {
+export async function runRecall(vault: string, query: string, top: number): Promise<RecallResponse> {
   const started = Date.now();
+  const script = await findRetrieve(vault);
+  if (!script)
+    throw new RecallError('unsupported', 'No retrieve.py: no vault-engine next to the vault, no VAULT_ENGINE, no scripts/ in the vault');
   return new Promise((resolvePromise, reject) => {
     // Chunk mode, as in Claude's own read protocol: ranked chunks, not one hit per page.
-    const child = spawn('python3', [join(vault, 'scripts', 'retrieve.py'), '-', '--top', String(top), '--chunks'], {
+    const child = spawn('python3', [script, '-', '--top', String(top), '--chunks'], {
       cwd: vault,
-      env: process.env,
+      // vault-engine's scripts find the vault through WIKI_VAULT; a vault's own scripts ignore it.
+      env: { ...process.env, WIKI_VAULT: vault },
       stdio: ['pipe', 'pipe', 'pipe'],
     });
     let stdout = '';
