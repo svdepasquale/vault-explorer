@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useMemo, useRef, useState } from 'react';
 import { useDerived } from '../../app/derived.ts';
 import { formatDate, plural, shortLabel } from '../../app/format.ts';
+import { PALETTES } from '../../app/palette.ts';
 import { useStore } from '../../app/store.ts';
 import { usePalette } from '../../app/theme.ts';
 import { buildGraph, layoutGraph, loadPositions, savePositions, type Positions } from './build.ts';
@@ -60,6 +61,10 @@ export default function GraphView() {
     [derived, settings, selected, highlight, palette, time, visible],
   );
 
+  // The galaxy is drawn on a dark field in both themes, so it always takes the dark palette.
+  const galaxy = settings.dimension === '3d' && settings.look === 'galaxy';
+  const ctx3d = useMemo(() => (ctx && galaxy ? { ...ctx, palette: PALETTES.dark } : ctx), [ctx, galaxy]);
+
   // Focus only applies when the selected page is on the graph (not before its birth in time travel).
   const focusApplied = settings.focusDepth > 0 && !!selected && visible.has(selected);
 
@@ -80,13 +85,13 @@ export default function GraphView() {
     setLayoutTick((t) => t + 1);
   };
 
-  if (!derived || !graph || !ctx) return null;
+  if (!derived || !graph || !ctx || !ctx3d) return null;
 
   return (
     <div className="graph-view">
       {settings.dimension === '3d' ? (
         <Suspense fallback={<div className="app-empty">Loading 3D…</div>}>
-          <Graph3D graph={graph} ctx={ctx} positions={positions} onReady={onReady} />
+          <Graph3D key={settings.look} look={settings.look} graph={graph} ctx={ctx3d} positions={positions} onReady={onReady} />
         </Suspense>
       ) : (
         <Sigma2D

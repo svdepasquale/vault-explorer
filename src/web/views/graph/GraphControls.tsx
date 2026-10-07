@@ -2,12 +2,23 @@ import { useState } from 'react';
 import { isOneSided, PREDICATES } from '../../../shared/model.ts';
 import { useDerived } from '../../app/derived.ts';
 import { formatNumber } from '../../app/format.ts';
-import { useStore, type ColorMode, type EmphasisField } from '../../app/store.ts';
+import { useStore, type ColorMode, type EmphasisField, type GraphSettings } from '../../app/store.ts';
 
 const COLOR_MODES: { id: ColorMode; label: string; hint: string }[] = [
   { id: 'kind', label: 'Kind', hint: 'Color by page kind' },
   { id: 'freshness', label: 'Freshness', hint: 'Days since the last update' },
   { id: 'emphasis', label: 'Highlight', hint: 'Highlight one domain, tag or status' },
+];
+
+const VIEW_MODES: { id: '2d' | '3d' | 'galaxy'; label: string; hint: string; patch: Partial<GraphSettings> }[] = [
+  { id: '2d', label: '2D', hint: 'Flat map (sigma.js)', patch: { dimension: '2d' } },
+  { id: '3d', label: '3D', hint: 'Rotatable 3D force graph (three.js)', patch: { dimension: '3d', look: 'classic' } },
+  {
+    id: 'galaxy',
+    label: 'Galaxy',
+    hint: 'The 3D graph as glowing stars on a dark field, slowly turning',
+    patch: { dimension: '3d', look: 'galaxy' },
+  },
 ];
 
 const FIELDS: { id: EmphasisField; label: string }[] = [
@@ -36,6 +47,7 @@ export function GraphControls({
 
   const values =
     settings.emphasis.field === 'domain' ? derived.domains : settings.emphasis.field === 'status' ? derived.statuses : derived.tags;
+  const viewMode = settings.dimension === '2d' ? '2d' : settings.look === 'galaxy' ? 'galaxy' : '3d';
   const usedPredicates = new Set(derived.model.relations.map((r) => r.predicate));
   const asymmetric = derived.model.relations.filter(isOneSided).length;
 
@@ -53,18 +65,18 @@ export function GraphControls({
         <>
           <div className="control-group">
             <span className="control-label">View</span>
-            <div className="segmented" role="radiogroup" aria-label="Dimension">
-              {(['2d', '3d'] as const).map((d) => (
+            <div className="segmented" role="radiogroup" aria-label="View">
+              {VIEW_MODES.map((m) => (
                 <button
-                  key={d}
+                  key={m.id}
                   type="button"
                   role="radio"
-                  aria-checked={settings.dimension === d}
-                  className={settings.dimension === d ? 'active' : ''}
-                  title={d === '2d' ? 'Flat map (sigma.js)' : 'Rotatable 3D force graph (three.js)'}
-                  onClick={() => updateGraph({ dimension: d })}
+                  aria-checked={viewMode === m.id}
+                  className={viewMode === m.id ? 'active' : ''}
+                  title={m.hint}
+                  onClick={() => updateGraph(m.patch)}
                 >
-                  {d.toUpperCase()}
+                  {m.label}
                 </button>
               ))}
             </div>

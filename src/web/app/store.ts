@@ -19,6 +19,8 @@ export type EmphasisField = 'domain' | 'tag' | 'status';
 export interface GraphSettings {
   /** 2D map (sigma) or 3D force graph (three.js). */
   dimension: '2d' | '3d';
+  /** 3D only: 'classic' solid spheres, or 'galaxy' glowing stars on a dark field. */
+  look: 'classic' | 'galaxy';
   /** 'hover': names only for the hovered/selected page and its neighbours; 'always': density-limited labels everywhere. */
   labels: 'hover' | 'always';
   colorBy: ColorMode;
@@ -90,6 +92,7 @@ function writeLocal(key: string, value: unknown): void {
 
 export const DEFAULT_GRAPH: GraphSettings = {
   dimension: '2d',
+  look: 'classic',
   labels: 'hover',
   colorBy: 'kind',
   emphasis: { field: 'domain', value: null },

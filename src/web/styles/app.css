@@ -1176,6 +1176,27 @@ a.history-hash:hover {
 
 .graph-canvas-3d {
   overflow: hidden;
+  /* The label layer stacks its labels with z-index: keep them under the cards. */
+  isolation: isolate;
+}
+
+/* Galaxy labels: HTML over the WebGL canvas, so the bloom never blurs them. The inks come from
+   the dark palette (set on the label layer), whatever the theme: the galaxy is always dark. */
+.graph-label-3d {
+  color: var(--label-ink-2);
+  font: 500 12px var(--font-sans);
+  white-space: nowrap;
+  text-shadow:
+    0 0 2px var(--label-halo),
+    0 0 4px var(--label-halo),
+    0 0 8px var(--label-halo);
+  pointer-events: none;
+  user-select: none;
+}
+
+.graph-label-3d.strong {
+  color: var(--label-ink);
+  font-weight: 600;
 }
 
 .timebar-launch {

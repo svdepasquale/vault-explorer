@@ -13,6 +13,7 @@ export function GraphLegend({ visible }: { visible: Set<string> }) {
   const palette = usePalette();
   if (!derived) return null;
   const pages = derived.model.pages;
+  const galaxy = settings.dimension === '3d' && settings.look === 'galaxy';
 
   const toggleKind = (kind: PageKind): void => {
     const hidden = settings.hiddenKinds.includes(kind) ? settings.hiddenKinds.filter((k) => k !== kind) : [...settings.hiddenKinds, kind];
@@ -85,8 +86,15 @@ export function GraphLegend({ visible }: { visible: Set<string> }) {
       <ul className="legend-list legend-edges">
         <li className="legend-row">
           <svg width="26" height="10" aria-hidden="true">
-            <line x1="1" y1="5" x2="19" y2="5" stroke={palette.typedEdge} strokeWidth="2" />
-            <path d="M18 1 L25 5 L18 9 Z" fill={palette.typedEdge} />
+            {galaxy ? (
+              // The galaxy draws relations as brighter filaments, without arrowheads.
+              <line x1="1" y1="5" x2="25" y2="5" stroke={palette.typedEdge} strokeWidth="2" />
+            ) : (
+              <>
+                <line x1="1" y1="5" x2="19" y2="5" stroke={palette.typedEdge} strokeWidth="2" />
+                <path d="M18 1 L25 5 L18 9 Z" fill={palette.typedEdge} />
+              </>
+            )}
           </svg>
           <span className="legend-label">Typed relation</span>
         </li>
