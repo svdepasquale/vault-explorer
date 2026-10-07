@@ -9,7 +9,7 @@ Thanks for considering a contribution. vault-explorer is a local, read-only expl
 
 ## Constraints to respect
 
-- **Read-only.** The server never writes inside the vault. The only side effects are the vault's own `scripts/retrieve.py` (which may update its own cache when the recall lens runs) and the app config under `$XDG_CONFIG_HOME/vault-explorer/` (default `~/.config/vault-explorer/`).
+- **Read-only.** The server never writes inside the vault. The only side effects are the retrieval script's own (`scripts/retrieve.py` from vault-engine, which may update the vault's untracked cache when the recall lens runs) and the app config under `$XDG_CONFIG_HOME/vault-explorer/` (default `~/.config/vault-explorer/`).
 - **Loopback only.** The server binds `127.0.0.1` and answers only requests whose `Host` header names that address and port; POST routes refuse a foreign `Origin` and anything but `application/json`. New routes go behind the same guards.
 - **Node runs the server TypeScript natively** (type stripping). Code under `src/core`, `src/server` and `src/shared` stays erasable: no enums, namespaces or parameter properties (`erasableSyntaxOnly`), `import type` for types (`verbatimModuleSyntax`), and `.ts` extensions in relative imports — `tsc` accepts other extensions there, so that last rule is enforced by the smoke step in `npm run check` and CI (`node bin/vault-explorer.js --help`).
 - **`src/shared` is the contract** between the server and the SPA: a change to `src/shared/model.ts` is an API change for both sides.

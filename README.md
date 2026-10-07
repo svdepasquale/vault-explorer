@@ -13,7 +13,7 @@ Read-only, served on `127.0.0.1`, nothing resident: start it, look, Ctrl-C.
 | **Timeline** | Commit calendar, cumulative pages by kind and links written, one lifeline per page (deleted pages included), and the commit feed (`<page>: what changed`) with filters. |
 | **Overview** | Headline numbers, the `hot.md` digest (open threads with clickable links), composition by kind / domain / status / tag, relations by predicate, hubs and outliers. |
 | **Health** | A visual lint: one-sided typed relations (the schema wants both pages to declare an edge that has an inverse), orphans, dead links, invalid YAML, values cut short by an unquoted ` #` (a YAML comment), missing fields, stale active pages, oversized pages, the `hot.md` byte budget. "Copy for Claude" puts the filtered list on the clipboard as a Markdown checklist. |
-| **Recall** | Runs the vault's own `scripts/retrieve.py` — the same hybrid retrieval Claude uses — and shows the ranked chunks; "Show on graph" lights the hits up. |
+| **Recall** | Runs `scripts/retrieve.py` from [vault-engine](https://github.com/svdepasquale/vault-engine) — a checkout next to the vault, `VAULT_ENGINE`, or a vault that still carries its own `scripts/` — the same hybrid retrieval Claude uses — and shows the ranked chunks; "Show on graph" lights the hits up. |
 
 The page panel (any view) shows frontmatter, typed relations from that page's side (one-sided ones flagged), backlinks, links out, the rendered page with working `[[wikilinks]]`, and its git history. ⌘K searches pages.
 

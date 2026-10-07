@@ -25,7 +25,7 @@ In scope:
 - The loopback HTTP server in `src/server/`
 - The `Host` header guard against DNS rebinding, and the `Origin` and `application/json` checks on POST routes
 - Path handling: page reads through `/api/page`, static file serving, vault selection, symlinks and dot-folders inside the vault
-- The `retrieve.py` bridge: how the server spawns the vault's `scripts/retrieve.py` and parses its output
+- The `retrieve.py` bridge: how the server finds `scripts/retrieve.py` (vault-engine next to the vault, `VAULT_ENGINE`, or the vault's own `scripts/`), spawns it and parses its output
 - The macOS `osascript` folder picker and the `open` call behind "open in app" / "reveal in Finder"
 - How the SPA renders page content (markup in a page that runs script in the explorer's origin)
 - GitHub Actions workflows under `.github/workflows/`
@@ -34,7 +34,7 @@ Out of scope:
 
 - The vault content itself: what pages say, and any secret a vault contains — the explorer only reads and displays it
 - Attacks that need local code execution as the user running the explorer: that user can already read the vault and everything the server can
-- Bugs inside `scripts/retrieve.py`, which belongs to the vault — report those to the vault's own repository
+- Bugs inside `scripts/retrieve.py`, which belongs to [vault-engine](https://github.com/svdepasquale/vault-engine) — report those there
 - Vulnerabilities in third-party dependencies with no exploitable path in vault-explorer — report those upstream
 
 ## What the server is meant to guarantee
