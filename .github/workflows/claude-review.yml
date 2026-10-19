@@ -18,14 +18,16 @@ name: claude-review
 # required status checks. A review that can block a merge is a review that gets
 # rubber-stamped. The real gate is the human `gh pr merge` (see renovate.json).
 
+# No `issue_comment` trigger, so no `@claude` mentions: this repo is public,
+# anyone can comment, and a comment-triggered run holds the repo's secrets and
+# a write-scoped token, on a fork's PR too. zizmor flags that trigger as
+# dangerous since 1.31.0. For a re-read after more commits, flip the PR to
+# draft and back: `gh pr ready --undo <n> && gh pr ready <n>`.
 on:
   pull_request:
     # No `synchronize`: re-reviewing on every push burns Actions minutes for
-    # diminishing returns. Push more commits and ask again with `@claude` if a
-    # re-read is actually wanted.
+    # diminishing returns; `ready_for_review` is the re-read switch above.
     types: [opened, ready_for_review]
-  issue_comment:
-    types: [created]
 
 # Workflow level stays read-only. The two write scopes the action needs to
 # post its comment live on the `review:` job below, so a step added to this
@@ -38,19 +40,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
+  group: claude-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
   review:
-    # Comments fire this workflow on issues too, so filter to PR comments that
-    # actually mention the trigger phrase. Without the `.pull_request` check
-    # every issue comment in the repo would start a runner.
-    if: >-
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'issue_comment' &&
-       github.event.issue.pull_request &&
-       contains(github.event.comment.body, '@claude'))
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # Scoped to the one job that actually posts. Claude comments on the PR
