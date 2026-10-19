@@ -14,9 +14,11 @@ name: claude-review
 # Nothing else needs to change; the next PR picks it up.
 #
 # THIS IS ADVISORY AND MUST NEVER BE A GATE. Claude posts comments, it cannot
-# approve, and it is deliberately absent from the `main-protection` ruleset's
-# required status checks. A review that can block a merge is a review that gets
-# rubber-stamped. The real gate is the human `gh pr merge` (see renovate.json).
+# approve, and no ruleset here lists it as a required check. A review that can
+# block a merge is a review that gets rubber-stamped. The real gate is the
+# human `gh pr merge`: this repo has no Renovate and auto-merge is off, so no
+# PR lands without one. Most changes are direct pushes to `main`, which this
+# review never sees.
 
 # No `issue_comment` trigger, so no `@claude` mentions: this repo is public,
 # anyone can comment, and a comment-triggered run holds the repo's secrets and
@@ -33,8 +35,7 @@ on:
 # post its comment live on the `review:` job below, so a step added to this
 # file later — including anything the pinned claude-code-action itself runs —
 # does not inherit a token that can write PR and issue comments just by being
-# here. These were zizmor's only two HIGH findings in either repo; the repo's
-# own gate could not see them because ci-security.yml runs the default
+# here. ci-security.yml would not catch a regression: it runs zizmor's default
 # persona, and `excessive-permissions` at the workflow level is auditor-only.
 permissions:
   contents: read
@@ -88,50 +89,48 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           track_progress: true
           use_sticky_comment: true
-          # OFF on purpose. These links hand a reader a one-click path into
-          # editing this repo, and a merge here applies infrastructure. The
-          # upstream docs warn against PR auto-fix on repos where a PR can
-          # trigger a deploy; this is that repo. A merge here force-pushes
-          # gitops/main and Argo CD auto-syncs it, so a one-click fix link
-          # would be one click from production.
+          # OFF: these links hand a reader a one-click path into editing the
+          # repo from a review comment. Nothing deploys from here, so this is a
+          # preference rather than a guard; it stays off until wanted.
           include_fix_links: false
           # Empty = no bot-authored trigger is honoured, which is the default
-          # and is kept deliberately. Renovate PR bodies embed upstream release
-          # notes verbatim — untrusted text, in a job holding a write-scoped
-          # GITHUB_TOKEN. Do not set this to '*' here.
+          # and is kept deliberately: a bot's PR body is untrusted text (a
+          # Dependabot security PR embeds upstream release notes verbatim).
+          # Do not set this to '*' here.
           allowed_bots: ""
           # Read-only toolset. Claude reviews; it does not edit, commit, or run
           # anything that mutates. Widening this is what turns an advisory
-          # reviewer into an actor on infrastructure.
+          # reviewer into an actor on the repo.
           claude_args: >-
             --allowedTools Read,Grep,Glob,Bash(git diff:*),Bash(git log:*),Bash(git show:*)
           prompt: |
-            Review this pull request for svdepasquale's homelab applications repo
-            (Helm charts + Argo CD + an Astro site, on a single-node k3s cluster
-            with a single operator). The infrastructure lives in the sibling repo
-            platform-infra; this one holds what runs on it.
+            Review this pull request for vault-explorer: a local, read-only
+            graphical explorer for a private markdown knowledge vault, run by its
+            single user on one Mac (a Node server on 127.0.0.1 plus a React SPA;
+            nothing is deployed). The repo is public; the vault it reads is not.
 
-            Weight your attention by blast radius, not by line count:
+            Weight your attention by what a mistake would cost, not by line count:
 
-            1. Anything that reaches the cluster without a human in between.
-               Argo CD auto-syncs with prune and selfHeal from `main` for four
-               Applications, and the site release force-pushes `gitops/main`.
-               A chart change is applied minutes after merge, unreviewed by
-               anything else. Deleting or renaming a resource is a prune.
-            2. NetworkPolicies and PodSecurity. The namespaces run default-deny
-               and the SSRF carve-outs are load-bearing: Miniflux fetches
-               arbitrary feed URLs and Vaultwarden fetches arbitrary icons, so a
-               widened egress block or a missing `except` range is a real hole,
-               not a style point. `100.64.0.0/10` is the tailnet.
-            3. The release pipeline in `site.yml` and `scripts/verify-deploy.sh`:
-               the verify gate and its auto-rollback are the only thing standing
-               between a bad image and a broken public site. Changes to the
-               supersede stand-down, the SHA-stamped `/version` endpoint, or the
-               rollback push deserve real scrutiny.
-            4. Values that Renovate automerges. Patch, pin and digest bumps land
-               on `main` with nobody at the merge, so anything that widens what
-               automerges is a change to who approves a production deploy.
-            5. Whether the comments still tell the truth. This codebase treats
+            1. The read-only contract. Nothing in this code may write inside the
+               vault or commit there. Git runs with `--no-optional-locks`
+               (`src/core/git.ts`), and the only file the app writes is its own
+               config (`src/server/config.ts`).
+            2. Privacy. Tests use the synthetic fixture in `test/fixtures/vault/`;
+               no real page names, hosts or vault text belong in fixtures,
+               screenshots, issues or commit messages.
+            3. The local server (`src/server/http.ts`). It binds 127.0.0.1, and
+               its Host and Origin allowlists are what keep another site open in
+               the browser from driving it. A request reaches files and processes
+               only through the model's page ids, the vault path the user picks
+               and the recall query on stdin; anything that widens that (a path
+               outside the model, a process argument built from request text, a
+               looser Host or Origin check) is a real hole.
+            4. `src/shared/model.ts` is the contract between server and SPA; a
+               change there must land on both sides.
+            5. The conventions in `CLAUDE.md`: erasable TypeScript syntax only
+               (Node strips the types at run time), colors only from the
+               validated palette, and the gotchas it lists.
+            6. Whether the comments still tell the truth. This codebase treats
                comments as load-bearing documentation, and a comment that has
                gone stale is treated as a defect, not a nit.
 
